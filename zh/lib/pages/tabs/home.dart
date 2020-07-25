@@ -21,7 +21,10 @@ class _HomePageState extends State<HomePage> {
           value["dy"] * _treeHeight,
           value["begincolor"],
           value["endcolor"],
-          value["time"]);
+          value["time"],
+          value["type"],
+          value["pwm"]
+      );
     });
     return tempList.toList();
   }
