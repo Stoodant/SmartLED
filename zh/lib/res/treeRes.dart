@@ -57,7 +57,7 @@ List listData = [
     "endcolor": Colors.blue,
     "time": 500,
     "type": 2,
-    "pwm" : 0.2
+    "pwm" : 0.4
   },
 ];
 
