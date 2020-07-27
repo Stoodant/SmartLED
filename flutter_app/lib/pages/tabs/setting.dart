@@ -13,10 +13,14 @@ class SettingPage extends StatefulWidget {
 
 class _SettingPageState extends State<SettingPage>
     with SingleTickerProviderStateMixin {
+  //type为判断是否按下闪烁按钮
   bool type = false;
+  //typeList为所有LED灯闪烁标志
   List<bool> typeList = [];
+  //colorList为所有LED灯的颜色控制，一个LED灯对应一个
   List<Color> colorList = [];
 
+  //该函数为初始化typeList和colorList的数量，默认初始化为false和黑色
   void getTypeAndColor() {
     for (var i = 0; i < showData.length; i++) {
       typeList.add(false);
@@ -24,13 +28,16 @@ class _SettingPageState extends State<SettingPage>
     }
   }
 
+  //pickColor为颜色选择器所选择的颜色，currentColor为选择器需要的参数
   Color currentColor = Colors.black;
   Color pickerColor = Color(0xff443a49);
 
+  //颜色选择器改变颜色所需要调用的函数，将currentColor的赋值也放在这，可以不需要按钮就能改变颜色
   void changeColor(Color color) => setState(() {
         pickerColor = color;
         currentColor = pickerColor;
       });
+  //动画控制器
   AnimationController _controller;
 
   @override
@@ -39,10 +46,7 @@ class _SettingPageState extends State<SettingPage>
         AnimationController(duration: Duration(milliseconds: 100), vsync: this);
     _controller.repeat(reverse: true);
 
-    _controller.addStatusListener((status) {
-      //print(currentColor.toString() + "        " + _controller.value.toString());
-    });
-
+    //初始化外部参数
     getTypeAndColor();
     super.initState();
   }
@@ -65,12 +69,16 @@ class _SettingPageState extends State<SettingPage>
           AnimatedBuilder(
               animation: _controller,
               builder: (BuildContext context, Widget child) {
-                //flag为是否点击标志
+                //flagList为是否点击标志
                 List<bool> flagList = [];
+                //turnColList为颜色控制器
                 List turnColList = [];
+                //通过遍历treeRes文件重的showData列表来初始化所以LED的颜色控制器
                 for (var i = 0; i < showData.length; i++) {
                   flagList.add(false);
                   turnColList.add(ColorTween(
+                          //通过flag来判断是否点击到当前LED，在end中通过type来判断是否闪烁，
+                          //这里默认变化颜色到黑色是为闪烁效果
                           begin: flagList[i] ? currentColor : colorList[i],
                           end: typeList[i]
                               ? Colors.black
@@ -78,9 +86,13 @@ class _SettingPageState extends State<SettingPage>
                       .animate(_controller));
                 }
 
+                //showWidget是显示的widget组件列表
                 List<Widget> showWidget = [];
                 for (var i = 0; i < showData.length; i++) {
                   //print(showData[i]["top"]);
+                  //当点击的时候，该索引下的flag为true，并且该LED的颜色控制为当前选择的值
+                  //并且还要考虑是否需要闪烁效果
+                  //这里利用stack和positioned组件来实现绝对定位，通过传入的top和left值来定位
                   showWidget.add(Positioned(
                     child: GestureDetector(
                       onTapDown: (event) {
@@ -116,13 +128,14 @@ class _SettingPageState extends State<SettingPage>
                 );
               }),
           ColorPicker(
-            //颜色选择器
+            //颜色选择器，将showLabel置为false则不显示选择的框
             pickerColor: pickerColor,
             onColorChanged: changeColor,
             showLabel: false,
             pickerAreaHeightPercent: 0.2,
           ),
           Container(
+            //这是控制是否闪烁的按钮，当按下该按钮时，type为反就可以了
             child: FloatingActionButton(
               onPressed: () => type = !type,
             ),
