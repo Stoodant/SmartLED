@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import '../../tools/Circle.dart';
 import '../../res/treeRes.dart';
-import '../tabs/setting.dart';
+import 'dart:async';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
+import 'dart:convert';
 
 class HomePage extends StatefulWidget {
   HomePage({Key key}) : super(key: key);
@@ -29,14 +32,62 @@ class _HomePageState extends State<HomePage> {
     return tempList.toList();
   }
 
+  Future<File> _getLocalFile(String str) async {
+    // get the path to the document directory.
+    String dir = (await getApplicationDocumentsDirectory()).path;
+    //print(dir);
+    return new File('$dir/$str.json');
+  }
+
+  void _read(List list, double treeWidth, double treeHeight) async {
+    try {
+      File file = await _getLocalFile("test");
+      String contents = await file.readAsString();
+
+      print("这是contents！！！！！！！！！！！！");
+      print(contents);
+      if (contents.length > 0) {
+        List str = json.decode(contents);
+        print("这是STR！！！！！！！！！！！！");
+        print(str);
+
+        List tmp = [];
+        double _widthOffset = _treeWidth * 0.5;
+        for (var i = 0; i < str.length; i++) {
+          tmp.add(CircleAnimated(
+              str[i]["dx"] * _treeWidth - _widthOffset,
+              str[i]["dy"] * _treeHeight,
+              str[i]["begincolor"],
+              str[i]["endcolor"],
+              str[i]["time"],
+              str[i]["type"],
+              str[i]["pwm"]));
+        }
+
+        list.add(Container(
+          width: treeWidth,
+          height: treeHeight,
+          child: Column(
+            children: this._getData(str),
+          ),
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(17),
+              border: Border.all(color: Colors.blueAccent, width: 1)),
+        ));
+      } else
+        print("contents is NULL!!!!!!!!!!!");
+    } on FileSystemException {
+      print('no data');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     double treeWidth = 180.0;
     double treeHeight = 300.0;
 
-    //this._getData();
-
     List<Widget> conList = [];
+    //print(countData);
     for (var i = 0; i < countData.length; i++) {
       conList.add(Container(
         width: treeWidth,
@@ -46,12 +97,11 @@ class _HomePageState extends State<HomePage> {
         ),
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(17),
-            ///圆角
-            border: Border.all(color: Colors.blueAccent, width: 1)
-            ///边框颜色、宽
-            ),
+            border: Border.all(color: Colors.blueAccent, width: 1)),
       ));
     }
+
+    _read(conList, treeWidth, treeHeight);
 
     conList.add(Container(
       width: treeWidth,
@@ -60,22 +110,22 @@ class _HomePageState extends State<HomePage> {
         children: <Widget>[
           Container(
             child: FloatingActionButton(
-              onPressed: ()=>Navigator.of(context).pushNamed("draw"),
+              onPressed: () {
+                //_read();
+                Navigator.of(context).pushNamed("draw");
+              },
               heroTag: "home",
               child: Text("新建"),
             ),
             width: 60,
             height: 60,
-            margin: EdgeInsets.only(top:100),
+            margin: EdgeInsets.only(top: 100),
           )
         ],
       ),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(17),
-        ///圆角
-        border: Border.all(color: Colors.blueAccent, width: 1)
-        ///边框颜色、宽
-        ),
+          borderRadius: BorderRadius.circular(17),
+          border: Border.all(color: Colors.blueAccent, width: 1)),
     ));
 
     return Wrap(

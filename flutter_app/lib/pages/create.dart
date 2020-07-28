@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import '../tools/Circle.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
@@ -55,11 +57,11 @@ class _drawPageState extends State<drawPage>
     super.initState();
   }
 
-  Future<File> _getLocalFile() async {
+  Future<File> _getLocalFile(String str) async {
     // get the path to the document directory.
     String dir = (await getApplicationDocumentsDirectory()).path;
     print(dir);
-    return new File('$dir/res/test.dart');
+    return new File('$dir/$str.json');
   }
 
   void _save() async {
@@ -67,22 +69,40 @@ class _drawPageState extends State<drawPage>
       res.add({
         "dx": showData[i]["left"],
         "dy": showData[i]["top"],
-        "begincolor": colorList[i],
-        "endcolor": colorList[i],
+        "begincolor": colorList[i].toString(),
+        "endcolor": colorList[i].toString(),
         "time": typeList[i] ? 500 : 1000,
         "type": typeList[i] ? 2 : 1,
         "pwm": typeList[i] ? 0.2 : 1.0,
       });
     }
+    print(colorList[0].toString());
+    print("这是res！！！！！！！！！！！！");
+    print(res);
+    String result = json.encode(res);
 
-    File file = await _getLocalFile();
-    print(_getLocalFile());
-    IOSink slink = file.openWrite(mode: FileMode.append);
-    slink.write('$res\n');
+    print("这是result！！！！！！！！！！！！");
+    print(result);
+    File file = await _getLocalFile("test");
+    //File file = File(r"../res/test.dart");
+    //print(_getLocalFile());
+    file.writeAsString(result);
     setState(() {
       res = [];
     });
-    slink.close();
+    print(result is String);
+  }
+
+  void _read() async {
+    try {
+      File file = await _getLocalFile(
+          "teat"); //getFile()是一个Future函数，所以用await,赋值对象是File类型；
+      String contents = await file
+          .readAsString(); //file.readAsString()是一个Future类型函数，用await修饰，然后赋值给了字符串；
+      print(contents);
+    } on FileSystemException {
+      print('no data');
+    }
   }
 
   @override
@@ -164,13 +184,8 @@ class _drawPageState extends State<drawPage>
                         height: _treeHeight,
                         decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(17),
-
-                            ///圆角
                             border:
-                                Border.all(color: Colors.blueAccent, width: 1)
-
-                            ///边框颜色、宽
-                            ),
+                                Border.all(color: Colors.blueAccent, width: 1)),
                       ),
                     );
                   }),
@@ -200,7 +215,9 @@ class _drawPageState extends State<drawPage>
                   ),
                   Container(
                     child: FloatingActionButton(
-                      onPressed: () => _save(),
+                      onPressed: () {
+                        _save();
+                      },
                       child: Text("保存"),
                       heroTag: "save",
                     ),
