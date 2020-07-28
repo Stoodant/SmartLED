@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../tools/Circle.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import '../res/treeRes.dart';
+import 'dart:async';
+import 'dart:io';
+import 'package:path_provider/path_provider.dart';
 
 class drawPage extends StatefulWidget {
   drawPage({Key key}) : super(key: key);
@@ -18,6 +21,8 @@ class _drawPageState extends State<drawPage>
   List<bool> typeList = [];
   //colorList为所有LED灯的颜色控制，一个LED灯对应一个
   List<Color> colorList = [];
+  //将要写入文件的值
+  List res = [];
 
   //该函数为初始化typeList和colorList的数量，默认初始化为false和黑色
   void getTypeAndColor() {
@@ -50,6 +55,36 @@ class _drawPageState extends State<drawPage>
     super.initState();
   }
 
+  Future<File> _getLocalFile() async {
+    // get the path to the document directory.
+    String dir = (await getApplicationDocumentsDirectory()).path;
+    print(dir);
+    return new File('$dir/res/test.dart');
+  }
+
+  void _save() async {
+    for (var i = 0; i < showData.length; i++) {
+      res.add({
+        "dx": showData[i]["left"],
+        "dy": showData[i]["top"],
+        "begincolor": colorList[i],
+        "endcolor": colorList[i],
+        "time": typeList[i] ? 500 : 1000,
+        "type": typeList[i] ? 2 : 1,
+        "pwm": typeList[i] ? 0.2 : 1.0,
+      });
+    }
+
+    File file = await _getLocalFile();
+    print(_getLocalFile());
+    IOSink slink = file.openWrite(mode: FileMode.append);
+    slink.write('$res\n');
+    setState(() {
+      res = [];
+    });
+    slink.close();
+  }
+
   @override
   void dispose() {
     _controller.dispose();
@@ -58,17 +93,20 @@ class _drawPageState extends State<drawPage>
 
   @override
   Widget build(BuildContext context) {
-    double treeWidth = 400.0;
-    //double treeHeight = 500.0;
+    double _treeWidth = 300.0; //矩形宽度
+    double _treeHeight = 450.0; //矩形高度
     return Scaffold(
         appBar: AppBar(
           title: Text("draw LED"),
         ),
         body: Container(
-          width: treeWidth,
+          width: 400.0,
           // height: treeHeight,
           child: Column(
             children: <Widget>[
+              SizedBox(
+                height: 20,
+              ),
               AnimatedBuilder(
                   animation: _controller,
                   builder: (BuildContext context, Widget child) {
@@ -88,7 +126,6 @@ class _drawPageState extends State<drawPage>
                                   : (flagList[i] ? currentColor : colorList[i]))
                           .animate(_controller));
                     }
-
                     //showWidget是显示的widget组件列表
                     List<Widget> showWidget = [];
                     for (var i = 0; i < showData.length; i++) {
@@ -96,6 +133,7 @@ class _drawPageState extends State<drawPage>
                       //当点击的时候，该索引下的flag为true，并且该LED的颜色控制为当前选择的值
                       //并且还要考虑是否需要闪烁效果
                       //这里利用stack和positioned组件来实现绝对定位，通过传入的top和left值来定位
+                      //print(showData[i]["top"] * _treeHeight);
                       showWidget.add(Positioned(
                         child: GestureDetector(
                           onTapDown: (event) {
@@ -113,8 +151,8 @@ class _drawPageState extends State<drawPage>
                                   CirclePainter(0.0, 0.0, turnColList[i].value),
                               size: Size(16, 16)),
                         ),
-                        top: showData[i]["top"],
-                        left: showData[i]["left"],
+                        top: showData[i]["top"] * _treeHeight,
+                        left: showData[i]["left"] * _treeWidth,
                       ));
                     }
                     return GestureDetector(
@@ -122,14 +160,23 @@ class _drawPageState extends State<drawPage>
                         child: Stack(
                           children: showWidget,
                         ),
-                        width: 400,
-                        height: 470,
+                        width: _treeWidth,
+                        height: _treeHeight,
+                        decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(17),
+
+                            ///圆角
+                            border:
+                                Border.all(color: Colors.blueAccent, width: 1)
+
+                            ///边框颜色、宽
+                            ),
                       ),
-                      onTapDown: (e) {
-                        print(e.localPosition);
-                      },
                     );
                   }),
+              SizedBox(
+                height: 20,
+              ),
               ColorPicker(
                 //颜色选择器，将showLabel置为false则不显示选择的框
                 pickerColor: pickerColor,
@@ -138,15 +185,31 @@ class _drawPageState extends State<drawPage>
                 pickerAreaHeightPercent: 0.2,
               ),
               Container(
-                //这是控制是否闪烁的按钮，当按下该按钮时，type为反就可以了
-                child: FloatingActionButton(
-                  onPressed: () => type = !type,
-                  child: Text("闪烁"),
-                ),
-                width: 50,
-                height: 50,
-                margin: EdgeInsets.only(left: 200),
-              )
+                  child: Row(
+                children: <Widget>[
+                  Container(
+                    //这是控制是否闪烁的按钮，当按下该按钮时，type为反就可以了
+                    child: FloatingActionButton(
+                      onPressed: () => type = !type,
+                      child: Text("闪烁"),
+                      heroTag: "spark",
+                    ),
+                    width: 50,
+                    height: 50,
+                    margin: EdgeInsets.only(left: 220),
+                  ),
+                  Container(
+                    child: FloatingActionButton(
+                      onPressed: () => _save(),
+                      child: Text("保存"),
+                      heroTag: "save",
+                    ),
+                    width: 50,
+                    height: 50,
+                    margin: EdgeInsets.only(left: 20),
+                  ),
+                ],
+              )),
             ],
           ),
         ));

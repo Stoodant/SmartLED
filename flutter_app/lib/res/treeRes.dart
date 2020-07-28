@@ -177,9 +177,10 @@ List listData3 = [
 ];
 
 List showData = [
-  {"top": 100.0, "left": 100.0},
-  {"top": 80.0, "left": 120.0},
-  {"top": 80.0, "left": 160.0},
-  {"top": 120.0, "left": 120.0},
-  {"top": 120.0, "left": 160.0},
+  {"top": 0.1, "left": 0.5},
+  {"top": 0.2, "left": 0.45},
+  {"top": 0.2, "left": 0.55},
+  {"top": 0.3, "left": 0.4},
+  {"top": 0.3, "left": 0.5},
+  {"top": 0.3, "left": 0.6},
 ];

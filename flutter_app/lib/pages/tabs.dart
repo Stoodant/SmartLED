@@ -55,42 +55,43 @@ class _TabsState extends State<Tabs> {
                 icon: Icon(Icons.settings), title: Text("设置")),
           ]),
       drawer: Drawer(
-          child: Column(
-        children: <Widget>[
-          Row(children: <Widget>[
-            Expanded(
-              child: UserAccountsDrawerHeader(
-                accountName: Text("username"),
-                accountEmail: Text("useremail"),
-                currentAccountPicture: CircleAvatar(
-                  backgroundImage: NetworkImage(
-                      "https://ss3.bdstatic.com/70cFv8Sh_Q1YnxGkpoWK1HF6hhy/it/u=1028479771,2944343576&fm=26&gp=0.jpg"),
+        child: Column(
+          children: <Widget>[
+            Row(children: <Widget>[
+              Expanded(
+                child: UserAccountsDrawerHeader(
+                  accountName: Text("username"),
+                  accountEmail: Text("useremail"),
+                  currentAccountPicture: CircleAvatar(
+                    backgroundImage: NetworkImage(
+                        "https://ss3.bdstatic.com/70cFv8Sh_Q1YnxGkpoWK1HF6hhy/it/u=1028479771,2944343576&fm=26&gp=0.jpg"),
+                  ),
                 ),
+              )
+            ]),
+            ListTile(
+              title: Text("home"),
+              leading: CircleAvatar(
+                child: Icon(Icons.home),
               ),
-            )
-          ]),
-          ListTile(
-            title: Text("home"),
-            leading: CircleAvatar(
-              child: Icon(Icons.home),
             ),
-          ),
-          Divider(),
-          ListTile(
-            title: Text("center"),
-            leading: CircleAvatar(
-              child: Icon(Icons.people),
+            Divider(),
+            ListTile(
+              title: Text("center"),
+              leading: CircleAvatar(
+                child: Icon(Icons.people),
+              ),
             ),
-          ),
-          Divider(),
-          ListTile(
-            title: Text("setting"),
-            leading: CircleAvatar(
-              child: Icon(Icons.settings),
+            Divider(),
+            ListTile(
+              title: Text("setting"),
+              leading: CircleAvatar(
+                child: Icon(Icons.settings),
+              ),
             ),
-          ),
-        ],
-      )),
+          ],
+        )
+      ),
     );
   }
 }

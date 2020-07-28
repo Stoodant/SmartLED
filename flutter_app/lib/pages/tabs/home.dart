@@ -46,10 +46,8 @@ class _HomePageState extends State<HomePage> {
         ),
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(17),
-
             ///圆角
             border: Border.all(color: Colors.blueAccent, width: 1)
-
             ///边框颜色、宽
             ),
       ));
