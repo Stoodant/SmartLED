@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
-List countData = [listData1,listData2,listData3];
+List countData = [listData1, listData2, listData3];
+
+List nameData = [];
 
 List listData1 = [
   //原点为左上角，dx(double)向右，dy(double)向下，传入0.0-1.0的相对百分比坐标

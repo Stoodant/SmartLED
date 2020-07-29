@@ -1,5 +1,5 @@
 import 'dart:convert';
-
+import 'dart:math';
 import 'package:flutter/material.dart';
 import '../tools/Circle.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
@@ -64,7 +64,20 @@ class _drawPageState extends State<drawPage>
     return new File('$dir/$str.json');
   }
 
-  void _save() async {
+  String getRandom() {
+    String alphabet = 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM';
+    int strlenght = 10;
+
+    /// 生成的字符串固定长度
+    String left = '';
+    for (var i = 0; i < strlenght; i++) {
+      //    right = right + (min + (Random().nextInt(max - min))).toString();
+      left = left + alphabet[Random().nextInt(alphabet.length)];
+    }
+    return left;
+  }
+
+  void _save(String str) async {
     for (var i = 0; i < showData.length; i++) {
       res.add({
         "dx": showData[i]["left"],
@@ -76,33 +89,17 @@ class _drawPageState extends State<drawPage>
         "pwm": typeList[i] ? 0.2 : 1.0,
       });
     }
-    print(colorList[0].toString());
-    // print("这是res！！！！！！！！！！！！");
-    // print(res);
     String result = json.encode(res);
-
-    // print("这是result！！！！！！！！！！！！");
-    // print(result);
-    File file = await _getLocalFile("test");
-    //File file = File(r"../res/test.dart");
-    //print(_getLocalFile());
+    File file = await _getLocalFile(str);
     file.writeAsString(result);
+
+    File tmp = await _getLocalFile("nameData");
+    tmp.writeAsString(str + "@", mode: FileMode.append);
+
     setState(() {
       res = [];
     });
     //print(result is String);
-  }
-
-  void _read() async {
-    try {
-      File file = await _getLocalFile(
-          "teat"); //getFile()是一个Future函数，所以用await,赋值对象是File类型；
-      String contents = await file
-          .readAsString(); //file.readAsString()是一个Future类型函数，用await修饰，然后赋值给了字符串；
-      print(contents);
-    } on FileSystemException {
-      print('no data');
-    }
   }
 
   @override
@@ -216,7 +213,9 @@ class _drawPageState extends State<drawPage>
                   Container(
                     child: FloatingActionButton(
                       onPressed: () {
-                        _save();
+                        String tmpStr = getRandom();
+                        print(tmpStr);
+                        _save(tmpStr);
                       },
                       child: Text("保存"),
                       heroTag: "save",

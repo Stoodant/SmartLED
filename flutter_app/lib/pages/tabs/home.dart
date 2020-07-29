@@ -16,7 +16,8 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   double _treeWidth = 200.0; //矩形宽度
   double _treeHeight = 300.0; //矩形高度
-  String contents = "";
+  var _contents = [];
+  List _nameList = [];
 
   List<Widget> _getData(List list) {
     double _widthOffset = _treeWidth * 0.5;
@@ -35,9 +36,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<File> _getLocalFile(String str) async {
-    // get the path to the document directory.
     String dir = (await getApplicationDocumentsDirectory()).path;
-    //print(dir);
     return new File('$dir/$str.json');
   }
 
@@ -46,9 +45,9 @@ class _HomePageState extends State<HomePage> {
     return Color(int.parse(objStr));
   }
 
-  Future<String> _read(double treeWidth, double treeHeight) async {
+  Future<String> _read(String str, double treeWidth, double treeHeight) async {
     try {
-      File file = await _getLocalFile("test");
+      File file = await _getLocalFile(str);
       String tmp = await file.readAsString();
       return tmp;
     } on FileSystemException {
@@ -56,11 +55,37 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  Future<List> _getName() async {
+    File file = await _getLocalFile("nameData");
+    String tmp = await file.readAsString();
+    print("this is nameData");
+    print(tmp);
+    List<String> res = tmp.split("@");
+    print("this is res");
+    print(res);
+    setState(() {
+      _nameList = res;
+    });
+    
+    return res;
+  }
+
   @override
   void initState() {
     // TODO: implement initState
-    _read(_treeWidth, _treeHeight)
-        .then((value) => setState(() => contents = value));
+    setState(() {
+      for (var i = 0; i < _nameList.length; i++) {
+        _read(_nameList[i], _treeWidth, _treeHeight)
+            .then((value) => setState(() => _contents[i] = value));
+      }
+
+      _getName().then((value) => _nameList = value);
+      print("this is nameList");
+      print(_nameList);
+
+      print("this is contents");
+      print(_contents);
+    });
     super.initState();
   }
 
@@ -83,34 +108,45 @@ class _HomePageState extends State<HomePage> {
             border: Border.all(color: Colors.blueAccent, width: 1)),
       ));
     }
-    //_read(conList, treeWidth, treeHeight);
-    if (contents.length > 0) {
-      List str = json.decode(contents);
-      List<Widget> tmp = [];
-      double _widthOffset = _treeWidth * 0.5;
-      for (var i = 0; i < str.length; i++) {
-        tmp.add(CircleAnimated(
-            str[i]["dx"] * _treeWidth - _widthOffset,
-            str[i]["dy"] * _treeHeight,
-            getColor(str[i]["begincolor"]),
-            getColor(str[i]["endcolor"]),
-            str[i]["time"],
-            str[i]["type"],
-            str[i]["pwm"]));
-      }
-      conList.add(Container(
-        width: treeWidth,
-        height: treeHeight,
-        child: Column(
-          children: tmp,
-        ),
-        decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(17),
-            border: Border.all(color: Colors.blueAccent, width: 1)),
-      ));
-    } else
-      print("contents is NULL!!!!!!!!!!!");
 
+    // for (var i = 0; i < _nameList.length; i++) {
+    //     _read(_nameList[i], _treeWidth, _treeHeight)
+    //         .then((value) => setState(() => _contents[i] = value));
+    //   }
+
+    //   _getName().then((value) => _nameList = value);
+
+    //_read(conList, treeWidth, treeHeight);
+    print(_contents is List);
+    for (var i = 0; i < _contents.length; i++) {
+      //print(contents[i] is String);
+      if (_contents[i].length > 0) {
+        List str = json.decode(_contents[i]);
+        List<Widget> tmp = [];
+        double _widthOffset = _treeWidth * 0.5;
+        for (var i = 0; i < str.length; i++) {
+          tmp.add(CircleAnimated(
+              str[i]["dx"] * _treeWidth - _widthOffset,
+              str[i]["dy"] * _treeHeight,
+              getColor(str[i]["begincolor"]),
+              getColor(str[i]["endcolor"]),
+              str[i]["time"],
+              str[i]["type"],
+              str[i]["pwm"]));
+        }
+        conList.add(Container(
+          width: treeWidth,
+          height: treeHeight,
+          child: Column(
+            children: tmp,
+          ),
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(17),
+              border: Border.all(color: Colors.blueAccent, width: 1)),
+        ));
+      } else
+        print("contents is NULL!!!!!!!!!!!");
+    }
     conList.add(Container(
       width: treeWidth,
       height: treeHeight,
