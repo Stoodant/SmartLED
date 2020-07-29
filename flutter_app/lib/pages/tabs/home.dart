@@ -35,16 +35,19 @@ class _HomePageState extends State<HomePage> {
     return tempList.toList();
   }
 
+  //获取文件函数
   Future<File> _getLocalFile(String str) async {
     String dir = (await getApplicationDocumentsDirectory()).path;
     return new File('$dir/$str.json');
   }
 
+  //从字符串中获取颜色的十六进制，并返回一个相应Color对象
   Color getColor(String str) {
     String objStr = str.substring(str.indexOf("(") + 1, str.indexOf(")"));
     return Color(int.parse(objStr));
   }
 
+  //读取相应的文件内容，并返回一个json字符串，要注意删除空的元素
   Future<String> _read(String str, double treeWidth, double treeHeight) async {
     if (str.isNotEmpty) {
       try {
@@ -57,6 +60,7 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  //从nameData文件中获取总够有多少信息文件，并返回一个list
   Future<List> _getName() async {
     File file = await _getLocalFile("nameData");
     String tmp = await file.readAsString();
@@ -69,18 +73,11 @@ class _HomePageState extends State<HomePage> {
     return res;
   }
 
-  void printTest(String s) {
-    // print("this is the $s's test");
-    // print("this is nameList");
-    // print(_nameList);
-
-    // print("this is contents");
-    // print(_contents);
-  }
-
+  //界面初始化
   @override
   void initState() {
     // TODO: implement initState
+    //首先先从nameData文件中获取总共有多少文件
     _getName().then((value) {
       print("getName success!!!!!!!!!!!!!");
       _nameList = value;
@@ -88,10 +85,9 @@ class _HomePageState extends State<HomePage> {
       print(_nameList);
       print(_nameList.length);
       print("over------------");
+      //从nameList中循环获取相应的配置信息
       for (var i = 0; i < _nameList.length; i++) {
         _read(_nameList[i], _treeWidth, _treeHeight).then((value) {
-          // print(value is String);
-          // print(value);
           if (value == null) {
             print("get null value!!");
           } else {
@@ -125,6 +121,8 @@ class _HomePageState extends State<HomePage> {
             border: Border.all(color: Colors.blueAccent, width: 1)),
       ));
     }
+
+    //处理用户生成的信息文件
     if (_contents.length > 0) {
       for (var i = 0; i < _contents.length; i++) {
         //print(contents[i] is String);
