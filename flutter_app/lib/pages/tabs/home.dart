@@ -16,9 +16,11 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   double _treeWidth = 200.0; //矩形宽度
   double _treeHeight = 300.0; //矩形高度
+  String contents = "";
 
   List<Widget> _getData(List list) {
     double _widthOffset = _treeWidth * 0.5;
+
     var tempList = list.map((value) {
       return CircleAnimated(
           value["dx"] * _treeWidth - _widthOffset,
@@ -39,46 +41,27 @@ class _HomePageState extends State<HomePage> {
     return new File('$dir/$str.json');
   }
 
-  void _read(List list, double treeWidth, double treeHeight) async {
+  Color getColor(String str) {
+    String objStr = str.substring(str.indexOf("(") + 1, str.indexOf(")"));
+    return Color(int.parse(objStr));
+  }
+
+  Future<String> _read(double treeWidth, double treeHeight) async {
     try {
       File file = await _getLocalFile("test");
-      String contents = await file.readAsString();
-
-      print("这是contents！！！！！！！！！！！！");
-      print(contents);
-      if (contents.length > 0) {
-        List str = json.decode(contents);
-        print("这是STR！！！！！！！！！！！！");
-        print(str);
-
-        List tmp = [];
-        double _widthOffset = _treeWidth * 0.5;
-        for (var i = 0; i < str.length; i++) {
-          tmp.add(CircleAnimated(
-              str[i]["dx"] * _treeWidth - _widthOffset,
-              str[i]["dy"] * _treeHeight,
-              str[i]["begincolor"],
-              str[i]["endcolor"],
-              str[i]["time"],
-              str[i]["type"],
-              str[i]["pwm"]));
-        }
-
-        list.add(Container(
-          width: treeWidth,
-          height: treeHeight,
-          child: Column(
-            children: this._getData(str),
-          ),
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(17),
-              border: Border.all(color: Colors.blueAccent, width: 1)),
-        ));
-      } else
-        print("contents is NULL!!!!!!!!!!!");
+      String tmp = await file.readAsString();
+      return tmp;
     } on FileSystemException {
       print('no data');
     }
+  }
+
+  @override
+  void initState() {
+    // TODO: implement initState
+    _read(_treeWidth, _treeHeight)
+        .then((value) => setState(() => contents = value));
+    super.initState();
   }
 
   @override
@@ -100,8 +83,33 @@ class _HomePageState extends State<HomePage> {
             border: Border.all(color: Colors.blueAccent, width: 1)),
       ));
     }
-
-    _read(conList, treeWidth, treeHeight);
+    //_read(conList, treeWidth, treeHeight);
+    if (contents.length > 0) {
+      List str = json.decode(contents);
+      List<Widget> tmp = [];
+      double _widthOffset = _treeWidth * 0.5;
+      for (var i = 0; i < str.length; i++) {
+        tmp.add(CircleAnimated(
+            str[i]["dx"] * _treeWidth - _widthOffset,
+            str[i]["dy"] * _treeHeight,
+            getColor(str[i]["begincolor"]),
+            getColor(str[i]["endcolor"]),
+            str[i]["time"],
+            str[i]["type"],
+            str[i]["pwm"]));
+      }
+      conList.add(Container(
+        width: treeWidth,
+        height: treeHeight,
+        child: Column(
+          children: tmp,
+        ),
+        decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(17),
+            border: Border.all(color: Colors.blueAccent, width: 1)),
+      ));
+    } else
+      print("contents is NULL!!!!!!!!!!!");
 
     conList.add(Container(
       width: treeWidth,
@@ -128,10 +136,14 @@ class _HomePageState extends State<HomePage> {
           border: Border.all(color: Colors.blueAccent, width: 1)),
     ));
 
-    return Wrap(
-      spacing: 20,
-      runSpacing: 20,
-      children: conList,
+    return ListView(
+      children: <Widget>[
+        Wrap(
+          spacing: 20,
+          runSpacing: 20,
+          children: conList,
+        )
+      ],
     );
   }
 }

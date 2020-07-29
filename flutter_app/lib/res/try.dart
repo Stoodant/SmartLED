@@ -8,8 +8,14 @@ var str = json.encode(data);
 
 var list = json.decode(str);
 
+List tmp = ["111"];
+
+void add(List list) {
+  list.add("123");
+}
+
 void main() {
-  print(data);
-  print(str);
-  print(list);
+  print(tmp);
+  add(tmp);
+  print(tmp);
 }

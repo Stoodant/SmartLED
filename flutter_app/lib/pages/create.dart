@@ -77,12 +77,12 @@ class _drawPageState extends State<drawPage>
       });
     }
     print(colorList[0].toString());
-    print("这是res！！！！！！！！！！！！");
-    print(res);
+    // print("这是res！！！！！！！！！！！！");
+    // print(res);
     String result = json.encode(res);
 
-    print("这是result！！！！！！！！！！！！");
-    print(result);
+    // print("这是result！！！！！！！！！！！！");
+    // print(result);
     File file = await _getLocalFile("test");
     //File file = File(r"../res/test.dart");
     //print(_getLocalFile());
@@ -90,7 +90,7 @@ class _drawPageState extends State<drawPage>
     setState(() {
       res = [];
     });
-    print(result is String);
+    //print(result is String);
   }
 
   void _read() async {
