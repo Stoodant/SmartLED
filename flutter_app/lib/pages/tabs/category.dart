@@ -95,25 +95,27 @@ class _CategoryPageState extends State<CategoryPage> {
   @override
   Widget build(BuildContext context) {
     return Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.center,
         children: <Widget>[
-          RaisedButton(
-            child: Text("jump to FormPage"),
-            onPressed: () {
-              Navigator.of(context).push(MaterialPageRoute(
-                  builder: (context) => FormPage(
-                        title: "jump to form",
-                      )));
-            },
-            color: Theme.of(context).accentColor,
-            textTheme: ButtonTextTheme.primary,
+          Container(
+            child: FloatingActionButton(
+              onPressed: () {
+                Navigator.of(context).pushNamed("edit");
+              },
+              heroTag: "toedit",
+              child: Text("toEdit"),),
+            width: 50,
+            height: 50,
+            
           ),
           SizedBox(
             height: 50,
           ),
           Container(
-            child: FloatingActionButton(onPressed: () => _incrementCounter()),
+            child: FloatingActionButton(
+              onPressed: () => _incrementCounter(),
+              heroTag: "tosend",
+              child: Text("Send"),),
             width: 50,
             height: 50,
           )

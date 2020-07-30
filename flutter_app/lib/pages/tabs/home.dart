@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_app/pages/edit.dart';
 import '../../tools/Circle.dart';
 import '../../res/treeRes.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'dart:convert';
- 
+
 class HomePage extends StatefulWidget {
   HomePage({Key key}) : super(key: key);
 
@@ -140,15 +141,25 @@ class _HomePageState extends State<HomePage> {
                 str[i]["type"],
                 str[i]["pwm"]));
           }
-          conList.add(Container(
-            width: treeWidth,
-            height: treeHeight,
-            child: Column(
-              children: tmp,
+          conList.add(GestureDetector(
+            child: Container(
+              width: treeWidth,
+              height: treeHeight,
+              child: Column(
+                children: tmp,
+              ),
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(17),
+                  border: Border.all(color: Colors.blueAccent, width: 1)),
             ),
-            decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(17),
-                border: Border.all(color: Colors.blueAccent, width: 1)),
+            onTap: () {
+              // print("this is tmp!!!!!!!!!!!!!!");
+              // print(tmp);
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => editPage(tmp,_nameList[i])));
+            },
           ));
         } else
           print("contents is NULL!!!!!!!!!!!");
