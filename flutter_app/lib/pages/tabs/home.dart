@@ -98,8 +98,14 @@ class _HomePageState extends State<HomePage> {
         });
       }
       //print(_contents);
+      // for (var i = 0; i < _nameList.length - 1; i++) {
+      //   String tmp = _nameList[i];
+      //   for (var j = i + 1; j < _nameList.length; j++)
+      //     if (tmp == _nameList[j]) _delete(tmp);
+      // }
       setState(() {});
     });
+
     super.initState();
   }
 
@@ -132,6 +138,8 @@ class _HomePageState extends State<HomePage> {
           List<Widget> tmp = [];
           double _widthOffset = _treeWidth * 0.5;
           for (var i = 0; i < str.length; i++) {
+            // print("this is dx!!!!!!!!!!!!!!!");
+            // print(str[i]["dx"] * _treeWidth - _widthOffset);
             tmp.add(CircleAnimated(
                 str[i]["dx"] * _treeWidth - _widthOffset,
                 str[i]["dy"] * _treeHeight,
@@ -154,11 +162,12 @@ class _HomePageState extends State<HomePage> {
             ),
             onTap: () {
               // print("this is tmp!!!!!!!!!!!!!!");
-              // print(tmp);
+              //print(str);
+              //print(_nameList[i]);
               Navigator.push(
                   context,
                   MaterialPageRoute(
-                      builder: (context) => editPage(tmp,_nameList[i])));
+                      builder: (context) => editPage(str, _nameList[i])));
             },
           ));
         } else

@@ -10,8 +10,8 @@ class CircleAnimated extends StatefulWidget {
   int _type;
   double _pwm = 0.5;
 
-  CircleAnimated(
-      double dx, double dy, Color startColor, Color endColor, int time, int type, double pwm) {
+  CircleAnimated(double dx, double dy, Color startColor, Color endColor,
+      int time, int type, double pwm) {
     //Color开始颜色 Color结束颜色 int时间
     _dx = dx;
     _dy = dy;
@@ -21,6 +21,12 @@ class CircleAnimated extends StatefulWidget {
     _type = type;
     _pwm = pwm;
   }
+
+  get dx => this._dx;
+  get dy => this._dy;
+  get type => this._type;
+  get color=> this._start;
+
   @override
   _CircleAnimatedState createState() =>
       _CircleAnimatedState(_dx, _dy, _start, _end, _t, _type, _pwm);
@@ -37,7 +43,8 @@ class _CircleAnimatedState extends State<CircleAnimated>
   int _type = 1;
   double _pwm = 0.5;
 
-  _CircleAnimatedState(double dx, double dy, Color start, Color end, int t, int type,double pwm) {
+  _CircleAnimatedState(double dx, double dy, Color start, Color end, int t,
+      int type, double pwm) {
     _dx = dx;
     _dy = dy;
     _startColor = start;
@@ -46,6 +53,11 @@ class _CircleAnimatedState extends State<CircleAnimated>
     _type = type;
     _pwm = pwm;
   }
+
+  double getDx() => this._dx;
+  double getDy() => this._dy;
+  int getType() => this._type;
+  Color getColor() => this._startColor;
 
   @override
   void initState() {
@@ -68,25 +80,24 @@ class _CircleAnimatedState extends State<CircleAnimated>
         child: AnimatedBuilder(
             animation: _controller,
             builder: (BuildContext context, Widget child) {
-
-              if(_type == 1){
-                Animation<Color> turnCol= ColorTween(begin: _startColor, end: _endColor)
-                    .animate(_controller);
-              return Container(
-                child: CustomPaint(
-                  painter: CirclePainter(this._dx, this._dy, turnCol.value),
-                ),
-              );
-              }
-              else{
-                Color turnCol = _controller.value<_pwm?_startColor:Colors.black;
+              if (_type == 1) {
+                Animation<Color> turnCol =
+                    ColorTween(begin: _startColor, end: _endColor)
+                        .animate(_controller);
+                return Container(
+                  child: CustomPaint(
+                    painter: CirclePainter(this._dx, this._dy, turnCol.value),
+                  ),
+                );
+              } else {
+                Color turnCol =
+                    _controller.value < _pwm ? _startColor : Colors.black;
                 return Container(
                   child: CustomPaint(
                     painter: CirclePainter(this._dx, this._dy, turnCol),
                   ),
                 );
               }
-
             }),
       ),
       // decoration: BoxDecoration(
@@ -99,7 +110,8 @@ class _CircleAnimatedState extends State<CircleAnimated>
   }
 }
 
-class CirclePainter extends CustomPainter {//双色渐变
+class CirclePainter extends CustomPainter {
+  //双色渐变
   Color _col = Colors.black;
   double _dx = 0.0;
   double _dy = 0.0;

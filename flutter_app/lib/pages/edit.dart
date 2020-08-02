@@ -41,9 +41,14 @@ class _editPageState extends State<editPage>
   //将要写入文件的值
   List res = [];
 
+  //flagList为是否点击标志
+  List<bool> flagList = [];
+  //turnColList为颜色控制器
+  List turnColList = [];
+
   //该函数为初始化typeList和colorList的数量，默认初始化为false和黑色
-  void getTypeAndColor() {
-    for (var i = 0; i < showData.length; i++) {
+  void getTypeAndColor(List list) {
+    for (var i = 0; i < list.length; i++) {
       typeList.add(false);
       colorList.add(Colors.black);
     }
@@ -72,9 +77,40 @@ class _editPageState extends State<editPage>
         AnimationController(duration: Duration(milliseconds: 100), vsync: this);
     _controller.repeat(reverse: true);
 
+    //getTypeAndColor(getJSON);
+
+    for (var i = 0; i < getJSON.length; i++) {
+      typeList.add(getJSON[i]["type"] == 1 ? false : true);
+      colorList.add(getColor(getJSON[i]["begincolor"]));
+    }
+
+    for (var i = 0; i < getJSON.length; i++) {
+      flagList.add(false);
+      turnColList.add(ColorTween(
+              begin: flagList[i] ? currentColor : colorList[i],
+              end: typeList[i]
+                  ? Colors.black
+                  : (flagList[i] ? currentColor : colorList[i]))
+          .animate(_controller));
+    }
+
+    setState(() {});
+
     //初始化外部参数
-    getTypeAndColor();
+    //getTypeAndColor(showData);
     super.initState();
+  }
+
+  void refresh() {
+    for (var i = 0; i < getJSON.length; i++) {
+      turnColList[i] = (ColorTween(
+              begin: flagList[i] ? currentColor : colorList[i],
+              end: typeList[i]
+                  ? Colors.black
+                  : (flagList[i] ? currentColor : colorList[i]))
+          .animate(_controller));
+      flagList[i] = false;
+    }
   }
 
   Future<File> _getLocalFile(String str) async {
@@ -113,9 +149,6 @@ class _editPageState extends State<editPage>
     File file = await _getLocalFile(str);
     file.writeAsString(result);
 
-    File tmp = await _getLocalFile("nameData");
-    tmp.writeAsString(str + "@", mode: FileMode.append);
-
     setState(() {
       res = [];
     });
@@ -128,6 +161,12 @@ class _editPageState extends State<editPage>
     setState(() {
       print("删除成功！！！！！");
     });
+
+    File file = await _getLocalFile("nameData");
+    String str = await file.readAsString();
+    String res = str.substring(0, str.indexOf(name)) +
+        str.substring(str.indexOf(name) + 11);
+    file.writeAsString(res);
   }
 
   @override
@@ -142,7 +181,7 @@ class _editPageState extends State<editPage>
     double _treeHeight = 450.0; //矩形高度
     return Scaffold(
         appBar: AppBar(
-          title: Text("draw LED"),
+          title: Text("edit LED"),
         ),
         body: Container(
           width: 400.0,
@@ -155,66 +194,34 @@ class _editPageState extends State<editPage>
               AnimatedBuilder(
                   animation: _controller,
                   builder: (BuildContext context, Widget child) {
-                    //flagList为是否点击标志
-                    List<bool> flagList = [];
-                    //turnColList为颜色控制器
-                    List turnColList = [];
-                    //通过遍历treeRes文件重的showData列表来初始化所以LED的颜色控制器
-                    for (var i = 0; i < showData.length; i++) {
-                      flagList.add(false);
-                      turnColList.add(ColorTween(
-                              //通过flag来判断是否点击到当前LED，在end中通过type来判断是否闪烁，
-                              //这里默认变化颜色到黑色是为闪烁效果
-                              begin: flagList[i] ? currentColor : colorList[i],
-                              end: typeList[i]
-                                  ? Colors.black
-                                  : (flagList[i] ? currentColor : colorList[i]))
-                          .animate(_controller));
-                    }
-                    //showWidget是显示的widget组件列表
-                    List<Widget> showWidget = [];
-                    for (var i = 0; i < showData.length; i++) {
-                      //print(showData[i]["top"]);
-                      //当点击的时候，该索引下的flag为true，并且该LED的颜色控制为当前选择的值
-                      //并且还要考虑是否需要闪烁效果
-                      //这里利用stack和positioned组件来实现绝对定位，通过传入的top和left值来定位
-                      //print(showData[i]["top"] * _treeHeight);
-                      showWidget.add(Positioned(
-                        child: GestureDetector(
-                          onTapDown: (event) {
-                            flagList[i] = true;
-                            typeList[i] = type;
-                            colorList[i] = currentColor;
-                          },
-                          onPanDown: (evnt) {
-                            flagList[i] = true;
-                            typeList[i] = type;
-                            colorList[i] = currentColor;
-                          },
-                          child: CustomPaint(
-                              painter:
-                                  CirclePainter(0.0, 0.0, turnColList[i].value),
-                              size: Size(16, 16)),
-                        ),
-                        top: showData[i]["top"] * _treeHeight,
-                        left: showData[i]["left"] * _treeWidth,
-                      ));
-                    }
-
                     List<Widget> getWidget = [];
                     for (var i = 0; i < this.getJSON.length; i++) {
-                      getWidget.add(Positioned(
-                        child: GestureDetector(
-                          onTap: () {
-                            flagList[i] = true;
-                            typeList[i] = type;
-                            colorList[i] = currentColor;
-                          }, 
-                          child: getJSON[i]),
-                      ));
+                      // print("this is $i");
+                      // print(getJSON[i]["dy"] * _treeHeight);
+                      getWidget.add(
+                        Positioned(
+                          child: Container(
+                            child: GestureDetector(
+                              onTap: () {
+                                setState(() {
+                                  flagList[i] = true;
+                                  typeList[i] = type;
+                                  colorList[i] = currentColor;
+                                  refresh();
+                                });
+                              },
+                              onTapDown: (event) => print(event.localPosition),
+                              child: CustomPaint(
+                                  painter: CirclePainter(
+                                      0.0, 0.0, turnColList[i].value),
+                                  size: Size(16, 16)),
+                            ),
+                          ),
+                          top: getJSON[i]["dy"] * _treeHeight,
+                          left: getJSON[i]["dx"] * _treeWidth,
+                        ),
+                      );
                     }
-
-                    // print(getWidget);
 
                     return GestureDetector(
                       child: Container(

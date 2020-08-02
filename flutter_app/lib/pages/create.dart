@@ -146,6 +146,8 @@ class _drawPageState extends State<drawPage>
                     //showWidget是显示的widget组件列表
                     List<Widget> showWidget = [];
                     for (var i = 0; i < showData.length; i++) {
+                      // print("this is $i ");
+                      // print(showData[i]["top"] * _treeHeight);
                       //print(showData[i]["top"]);
                       //当点击的时候，该索引下的flag为true，并且该LED的颜色控制为当前选择的值
                       //并且还要考虑是否需要闪烁效果
@@ -157,6 +159,7 @@ class _drawPageState extends State<drawPage>
                             flagList[i] = true;
                             typeList[i] = type;
                             colorList[i] = currentColor;
+                            print(event.localPosition);
                           },
                           onPanDown: (evnt) {
                             flagList[i] = true;
