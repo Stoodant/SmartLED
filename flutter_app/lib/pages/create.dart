@@ -7,6 +7,7 @@ import '../res/treeRes.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
+import 'package:slide_popup_dialog/slide_popup_dialog.dart' as slideDialog;
 
 class drawPage extends StatefulWidget {
   drawPage({Key key}) : super(key: key);
@@ -25,6 +26,8 @@ class _drawPageState extends State<drawPage>
   List<Color> colorList = [];
   //将要写入文件的值
   List res = [];
+
+  var textController = TextEditingController();
 
   //该函数为初始化typeList和colorList的数量，默认初始化为false和黑色
   void getTypeAndColor() {
@@ -87,6 +90,7 @@ class _drawPageState extends State<drawPage>
         "time": typeList[i] ? 500 : 1000,
         "type": typeList[i] ? 2 : 1,
         "pwm": typeList[i] ? 0.2 : 1.0,
+        "name": textController.text
       });
     }
     String result = json.encode(res);
@@ -104,8 +108,41 @@ class _drawPageState extends State<drawPage>
 
   @override
   void dispose() {
+    textController.dispose();
     _controller.dispose();
     super.dispose();
+  }
+
+  void _showDialog() {
+    slideDialog.showSlideDialog(
+      context: context,
+      child: Column(
+        children: <Widget>[
+          Text("请输入自定义名称"),
+          SizedBox(
+            height: 20,
+          ),
+          TextField(
+            decoration: InputDecoration(
+              hintText: "input name", border: OutlineInputBorder()),
+              controller: textController,
+          ),
+          SizedBox(height: 20),
+          Container(
+            child: FloatingActionButton(
+              child: Text("确定"),
+              onPressed: () {
+                print(textController.text);
+                String tmpStr = getRandom();
+                _save(tmpStr);
+                Navigator.of(context).pop(1);
+              },
+            ),
+            margin: EdgeInsets.only(left: 280),
+          )
+        ],
+      ),
+    );
   }
 
   @override
@@ -216,9 +253,7 @@ class _drawPageState extends State<drawPage>
                   Container(
                     child: FloatingActionButton(
                       onPressed: () {
-                        String tmpStr = getRandom();
-                        print(tmpStr);
-                        _save(tmpStr);
+                        _showDialog();
                       },
                       child: Text("保存"),
                       heroTag: "save",

@@ -151,7 +151,7 @@ class _HomePageState extends State<HomePage> {
           }
 
           tmp.add(Container(
-            child: Text("test!!!"),
+            child: Text(str[i]["name"]),
             margin: EdgeInsets.only(top:260),
           ));
 
