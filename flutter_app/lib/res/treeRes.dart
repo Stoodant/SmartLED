@@ -9,6 +9,9 @@ List listData1 = [
   //如x坐标为方框内从左到右74%的地方则传入dx = 0.74
   //pwm：单色闪烁占空比，是在time毫秒内前pwm*time毫秒内亮beginColor，endColor无效
   {
+    "name":"test1",
+  },
+  {
     "dx": 0.5,
     "dy": 0.1,
     "begincolor": Colors.blue,
@@ -66,6 +69,9 @@ List listData1 = [
 
 List listData2 = [
   {
+    "name":"test2",
+  },
+  {
     "dx": 0.5,
     "dy": 0.1,
     "begincolor": Colors.blue,
@@ -122,6 +128,9 @@ List listData2 = [
 ];
 
 List listData3 = [
+  {
+    "name":"test3",
+  },
   {
     "dx": 0.5,
     "dy": 0.1,

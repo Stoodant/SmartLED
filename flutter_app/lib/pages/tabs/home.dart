@@ -22,18 +22,23 @@ class _HomePageState extends State<HomePage> {
 
   List<Widget> _getData(List list) {
     double _widthOffset = _treeWidth * 0.5;
+    List<Widget> res = [];
+    for (var i = 1; i < list.length; i++) {
+      res.add(CircleAnimated(
+          list[i]["dx"] * _treeWidth - _widthOffset,
+          list[i]["dy"] * _treeHeight,
+          list[i]["begincolor"],
+          list[i]["endcolor"],
+          list[i]["time"],
+          list[i]["type"],
+          list[i]["pwm"]));
+    }
 
-    var tempList = list.map((value) {
-      return CircleAnimated(
-          value["dx"] * _treeWidth - _widthOffset,
-          value["dy"] * _treeHeight,
-          value["begincolor"],
-          value["endcolor"],
-          value["time"],
-          value["type"],
-          value["pwm"]);
-    });
-    return tempList.toList();
+    res.add(Container(
+      child: Text(list[0]["name"]),
+      margin: EdgeInsets.only(top:260),
+    ));
+    return res;
   }
 
   //获取文件函数
@@ -79,6 +84,9 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     // TODO: implement initState
     //首先先从nameData文件中获取总共有多少文件
+
+    setState(() {});
+
     _getName().then((value) {
       print("getName success!!!!!!!!!!!!!");
       _nameList = value;
@@ -97,12 +105,6 @@ class _HomePageState extends State<HomePage> {
           }
         });
       }
-      //print(_contents);
-      // for (var i = 0; i < _nameList.length - 1; i++) {
-      //   String tmp = _nameList[i];
-      //   for (var j = i + 1; j < _nameList.length; j++)
-      //     if (tmp == _nameList[j]) _delete(tmp);
-      // }
       setState(() {});
     });
 
@@ -120,9 +122,7 @@ class _HomePageState extends State<HomePage> {
       conList.add(Container(
         width: treeWidth,
         height: treeHeight,
-        child: Column(
-          children: this._getData(countData[i]),
-        ),
+        child: Column(children: this._getData(countData[i])),
         decoration: BoxDecoration(
             borderRadius: BorderRadius.circular(17),
             border: Border.all(color: Colors.blueAccent, width: 1)),
@@ -149,6 +149,12 @@ class _HomePageState extends State<HomePage> {
                 str[i]["type"],
                 str[i]["pwm"]));
           }
+
+          tmp.add(Container(
+            child: Text("test!!!"),
+            margin: EdgeInsets.only(top:260),
+          ));
+
           conList.add(GestureDetector(
             child: Container(
               width: treeWidth,
