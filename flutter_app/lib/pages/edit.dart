@@ -7,6 +7,7 @@ import '../res/treeRes.dart';
 import 'dart:async';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
+import 'package:slide_popup_dialog/slide_popup_dialog.dart' as slideDialog;
 
 class editPage extends StatefulWidget {
   List getJson;
@@ -66,9 +67,42 @@ class _editPageState extends State<editPage>
   //动画控制器
   AnimationController _controller;
 
+  var textController = TextEditingController();
+
   Color getColor(String str) {
     String objStr = str.substring(str.indexOf("(") + 1, str.indexOf(")"));
     return Color(int.parse(objStr));
+  }
+
+  void _showDialog(String str) {
+    slideDialog.showSlideDialog(
+      context: context,
+      child: Column(
+        children: <Widget>[
+          Text("修改名称"),
+          SizedBox(
+            height: 20,
+          ),
+          TextField(
+            decoration: InputDecoration(
+                hintText: textController.text, border: OutlineInputBorder()),
+            controller: textController,
+          ),
+          SizedBox(height: 20),
+          Container(
+            child: FloatingActionButton(
+              child: Text("确定"),
+              onPressed: () {
+                print(textController.text);
+                _save(str);
+                Navigator.of(context).pop(1);
+              },
+            ),
+            margin: EdgeInsets.only(left: 280),
+          )
+        ],
+      ),
+    );
   }
 
   @override
@@ -93,6 +127,8 @@ class _editPageState extends State<editPage>
                   : (flagList[i] ? currentColor : colorList[i]))
           .animate(_controller));
     }
+
+    textController.text = getJSON[0]["name"];
 
     setState(() {});
 
@@ -143,6 +179,7 @@ class _editPageState extends State<editPage>
         "time": typeList[i] ? 500 : 1000,
         "type": typeList[i] ? 2 : 1,
         "pwm": typeList[i] ? 0.2 : 1.0,
+        "name": textController.text
       });
     }
     String result = json.encode(res);
@@ -222,6 +259,31 @@ class _editPageState extends State<editPage>
                         ),
                       );
                     }
+
+                    getWidget.add(Column(
+                      children: <Widget>[
+                        SizedBox(
+                          height: 400,
+                        ),
+                        Row(
+                          children: <Widget>[
+                            Container(
+                              child: Icon(Icons.edit,size: 18,),
+                              margin: EdgeInsets.only(left: 130),
+                              
+                            ),
+                            Container(
+                              child: GestureDetector(
+                                child: Text(getJSON[0]["name"],
+                                            style: TextStyle(fontSize: 18),),
+                                onTap: () => _showDialog(this.fileName),
+                              ),                           
+                              margin: EdgeInsets.only(left: 5),
+                            )
+                          ],
+                        )                       
+                      ],
+                    ));
 
                     return GestureDetector(
                       child: Container(

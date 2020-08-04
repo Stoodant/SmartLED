@@ -35,7 +35,7 @@ class _HomePageState extends State<HomePage> {
     }
 
     res.add(Container(
-      child: Text(list[0]["name"]),
+      child: Text(list[0]["name"],style: TextStyle(fontSize: 16)),
       margin: EdgeInsets.only(top:260),
     ));
     return res;
@@ -151,7 +151,7 @@ class _HomePageState extends State<HomePage> {
           }
 
           tmp.add(Container(
-            child: Text(str[i]["name"]),
+            child: Text(str[i]["name"],style: TextStyle(fontSize: 16)),
             margin: EdgeInsets.only(top:260),
           ));
 
