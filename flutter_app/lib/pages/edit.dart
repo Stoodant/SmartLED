@@ -265,23 +265,25 @@ class _editPageState extends State<editPage>
                         SizedBox(
                           height: 400,
                         ),
-                        Row(
-                          children: <Widget>[
-                            Container(
-                              child: Icon(Icons.edit,size: 18,),
-                              margin: EdgeInsets.only(left: 130),
+                        Center(
+                          child: Row(
+                            children: <Widget>[
+                              Container(
+                                child: Icon(Icons.edit,size: 18,),
+                                margin: EdgeInsets.only(left: 85),                               
+                              ),
                               
-                            ),
-                            Container(
-                              child: GestureDetector(
-                                child: Text(getJSON[0]["name"],
-                                            style: TextStyle(fontSize: 18),),
-                                onTap: () => _showDialog(this.fileName),
-                              ),                           
-                              margin: EdgeInsets.only(left: 5),
-                            )
-                          ],
-                        )                       
+                              Expanded(child:Container(
+                                child: GestureDetector(
+                                  child: Text(getJSON[0]["name"],
+                                              style: TextStyle(fontSize: 18),),
+                                  onTap: () => _showDialog(this.fileName),
+                                ),                           
+                                margin: EdgeInsets.only(left: 20),
+                              )  )    
+                            ],
+                          ) ,
+                        )                                             
                       ],
                     ));
 

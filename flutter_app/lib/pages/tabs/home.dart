@@ -167,9 +167,6 @@ class _HomePageState extends State<HomePage> {
                   border: Border.all(color: Colors.blueAccent, width: 1)),
             ),
             onTap: () {
-              // print("this is tmp!!!!!!!!!!!!!!");
-              //print(str);
-              //print(_nameList[i]);
               Navigator.push(
                   context,
                   MaterialPageRoute(

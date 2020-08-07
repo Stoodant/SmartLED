@@ -8,6 +8,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:slide_popup_dialog/slide_popup_dialog.dart' as slideDialog;
+import 'package:awesome_dialog/awesome_dialog.dart';
 
 class drawPage extends StatefulWidget {
   drawPage({Key key}) : super(key: key);
@@ -132,10 +133,25 @@ class _drawPageState extends State<drawPage>
             child: FloatingActionButton(
               child: Text("确定"),
               onPressed: () {
-                print(textController.text);
-                String tmpStr = getRandom();
-                _save(tmpStr);
-                Navigator.of(context).pop(1);
+                if(textController.text == ""){
+                  AwesomeDialog(
+                    context: context,
+                    dialogType: DialogType.WARNING,
+                    headerAnimationLoop: false,
+                    animType: AnimType.TOPSLIDE,
+                    title: 'Warning',
+                    desc:
+                        '自定义名称不能为空！！！',
+                    btnCancelOnPress: () {},
+                    btnOkOnPress: () {})
+                  ..show();
+                }
+                else{
+                  print(textController.text);
+                  String tmpStr = getRandom();
+                  _save(tmpStr);
+                  Navigator.of(context).pop(1);
+                }
               },
             ),
             margin: EdgeInsets.only(left: 280),
@@ -253,7 +269,7 @@ class _drawPageState extends State<drawPage>
                   Container(
                     child: FloatingActionButton(
                       onPressed: () {
-                        _showDialog();
+                          _showDialog();
                       },
                       child: Text("保存"),
                       heroTag: "save",
