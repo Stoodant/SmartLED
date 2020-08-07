@@ -8,6 +8,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:path_provider/path_provider.dart';
 import 'package:slide_popup_dialog/slide_popup_dialog.dart' as slideDialog;
+import 'package:awesome_dialog/awesome_dialog.dart';
 
 class editPage extends StatefulWidget {
   List getJson;
@@ -93,9 +94,25 @@ class _editPageState extends State<editPage>
             child: FloatingActionButton(
               child: Text("确定"),
               onPressed: () {
-                print(textController.text);
-                _save(str);
-                Navigator.of(context).pop(1);
+                if(textController.text == ""){
+                  AwesomeDialog(
+                    context: context,
+                    dialogType: DialogType.WARNING,
+                    headerAnimationLoop: false,
+                    animType: AnimType.TOPSLIDE,
+                    title: 'Warning',
+                    desc:
+                        '自定义名称不能为空！！！',
+                    btnCancelOnPress: () {},
+                    btnOkOnPress: () {})
+                  ..show();
+                }
+                else{
+                  print(textController.text);
+                  _save(str);
+                  Navigator.of(context).pop(1);
+                }
+                
               },
             ),
             margin: EdgeInsets.only(left: 280),
