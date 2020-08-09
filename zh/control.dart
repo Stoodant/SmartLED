@@ -2,64 +2,134 @@ class customPacket {//ver0.4
   int LEDamount = 0;
   Uint8List message;
   Uint8List streamMessage;
+  int streamNo = 0;
   int dataLength = 0;
   bool error = false;
   int opendFile = 0;
   bool streamControl = true;//true为关闭，false为开启
+  int totalMemory = 0;
+  int usedMemory = 0;
 
   customPacket() {
-
     getAmount();//获取灯的数量
+    getMemoryInfo();//获取空间信息
     print("created.");
   }
-  void startUDPStream(){//开启UDP流控
-    var rand = Random();
-    const streamTime = const Duration(milliseconds: 190);//0.19s一次
+  void getMemoryInfo() async {
+
+    Uint8List message2 = Uint8List(9);//发送的数据包
+    var data2 = ByteData.view(message2.buffer);
+    int num2 = 0x53485955;
+    data2.setUint32(0, num2);//头部4字节
+    data2.setUint8(4, ((1 >> 0) & 0xff));//长度低8位
+    data2.setUint8(5, ((1 >> 8) & 0xff));//长度高8位
+    data2.setUint8(8, 0x05);//
+    int check = 0;//校验
+    for (int i = 8; i < 9; i++) {
+      check += data2.getUint8(i);
+    }
+    check = check & 0xff;//低8位
+    int check2 = 0xff - check;//校验高8位
+    data2.setUint8(6, check);
+    data2.setUint8(7, check2);
+
+    Uint8List receiveData;
+    InternetAddress LEDaddr = InternetAddress("192.168.4.1");
+    try{
+      Socket socket = await Socket.connect(LEDaddr, 6600); //TCP
+      socket.add(message2);//发送数据包
+      socket.listen((datarec) {//接受数据包
+        receiveData =  datarec;
+        var data = ByteData.view(receiveData.buffer);
+        if(receiveData[8]==0x85){
+          this.totalMemory = data.getUint8(12);
+          for(int i=11;i>8;i--){
+            this.totalMemory = this.totalMemory << 8;
+            this.totalMemory = this.totalMemory | data.getUint8(i);
+          }
+          this.usedMemory = data.getUint8(16);
+          for(int i=15;i>12;i--){
+            this.usedMemory = this.usedMemory << 8;
+            this.usedMemory = this.usedMemory | data.getUint8(i);
+          }
+          print("total Memory:"+totalMemory.toString());
+          print("used Memory:"+usedMemory.toString());
+        }
+        else{
+        }
+      }); //TCPEND
+      socket.close();
+    }catch(e){
+      print("Link error. Please check network");
+      error = true;
+    }
+  }
+
+  void setStreamMessage(int no,Uint8List data){//设置流控信息,no!=0,传入数据最快155ms一次，请在外部设置好
+    streamNo = no;
+    streamMessage = data;
+  }
+
+  void endUDPStream(){//结束UDP流控
+    streamControl = true;
+    streamNo = 0;
+    print("Stream end.");
+  }
+
+  void startUDPStream(){//开始UDP流控
+    streamControl = false;
+    int sendNo = 0xff;//发送序号
+    const streamTime = const Duration(milliseconds: 75);//0.075s一次
     Uint8List sendStreamMessage;
     InternetAddress LEDaddr = InternetAddress("192.168.4.1");
-    int count = 0;
+    Uint8List finalStreamMessage;
     Timer.periodic(streamTime, (timer) { //callback function
-      sendStreamMessage = streamMessage;
-      finalStreamMessage = Uint8List(8+LEDamount*3);//发送的数据包包头
-      var data = ByteData.view(message.buffer);
-      int num = 0x53485955;
-      data.setUint32(0, num);//头部4字节
-      data.setUint8(4, ((LEDamount*3+4 >> 0) & 0xff));//长度低8位
-      data.setUint8(5, ((LEDamount*3+4 >> 8) & 0xff));//长度高8位
-      data.setUint8(8, 0x02);//长度低8位
-      data.setUint8(9, (count & 0xff));//编号
-      data.setUint8(10, 0x01);//持续0.2s
-      data.setUint8(11, 0x00);
-      for(int i=0;i<LEDamount*3;i++){//填充数据
-        message[i+12] = sendStreamMessage[i];
-      }
-      int check = 0;//校验
-      for (int i = 8; i < 8 + LEDamount*3; i++) {
-        check += data.getUint8(i);
-      }
-      check = check & 0xff;//低8位
-      int check2 = 0xff - check;//校验高8位
-      data.setUint8(6, check);
-      data.setUint8(7, check2);
-      
-      
-      
-      var udpSocket = RawDatagramSocket.bind(InternetAddress.anyIPv4, 0);
-      udpSocket.then((socket) {
-        socket.send(message, LEDaddr, 6000); //发送数据
-        socket.listen((event) {
-          if (event == RawSocketEvent.read) {
-            var recData = socket
-                .receive()
-                .data;
-            print(recData);
-          }
+      if((sendNo != (streamNo & 0xff)) && (streamNo != 0)){//有新包则发送
+        sendNo = (streamNo & 0xff);
+        sendStreamMessage = streamMessage;
+        finalStreamMessage = Uint8List(12+LEDamount*3);//发送的数据包
+        var data = ByteData.view(finalStreamMessage.buffer);
+        int num = 0x53485955;
+        data.setUint32(0, num);//头部4字节
+        data.setUint8(4, ((LEDamount*3+4 >> 0) & 0xff));//长度低8位
+        data.setUint8(5, ((LEDamount*3+4 >> 8) & 0xff));//长度高8位
+        data.setUint8(8, 0x02);//长度低8位
+        data.setUint8(9, sendNo);//编号
+        data.setUint8(10, 0x01);//持续0.2s
+        data.setUint8(11, 0x00);
+        for(int i=0;i<LEDamount*3;i++){//填充数据
+          finalStreamMessage[i+12] = sendStreamMessage[i];
+        }
+        int check = 0;//校验
+        for (int i = 8; i < 12 + LEDamount*3; i++) {
+          check += data.getUint8(i);
+        }
+        check = check & 0xff;//低8位
+        int check2 = 0xff - check;//校验高8位
+        data.setUint8(6, check);
+        data.setUint8(7, check2);
+
+
+
+        var udpSocket = RawDatagramSocket.bind(InternetAddress.anyIPv4, 0);
+        udpSocket.then((socket) {
+          socket.send(finalStreamMessage, LEDaddr, 6000); //发送数据
+          socket.listen((event) {
+            if (event == RawSocketEvent.read) {
+              var recData = socket
+                  .receive()
+                  .data;
+              print(recData[10]);
+              if(recData[10] > 20) print("over!");
+            }
+          });
         });
-      });
+      }
       if(streamControl) timer.cancel();
     });
   }
-  void turnLightToUDP(){
+
+  void turnLightToUDP(){//开启udp模式，任何需要udp的功能都要先执行这个
     Uint8List sendData = Uint8List(4);
     var data = ByteData.view(sendData.buffer);
     data.setUint8(0, 0x00);
@@ -70,12 +140,14 @@ class customPacket {//ver0.4
     sendTCP();
     print("Turn to udp.");
   }
+
   void openFile(int num){
     //打开存储的灯光配置文件1-10
     if(num>0 && num<11){
+      opendFile = num;
       Uint8List sendData = Uint8List(4);
       var data = ByteData.view(sendData.buffer);
-      data.setUint8(0, 0x00);
+      data.setUint8(0, 0x01);
       data.setUint8(1, 0x01);
       data.setUint8(2, num+2);
       data.setUint8(3, 0x00);
@@ -86,11 +158,12 @@ class customPacket {//ver0.4
       print("number error.");
     }
   }
+
   void closeFile(){//关闭当前打开的文件
     if(opendFile!=0){
       Uint8List sendData = Uint8List(4);
       var data = ByteData.view(sendData.buffer);
-      data.setUint8(0, 0x00);
+      data.setUint8(0, 0x01);
       data.setUint8(1, 0x01);
       data.setUint8(2, opendFile+2);
       data.setUint8(3, 0x02);
@@ -102,9 +175,9 @@ class customPacket {//ver0.4
       print("No File Opening.");
     }
   }
+
   void testLED(){//执行显示测试，结束后关灯
-    //getAmount();//先执行获取灯的数量
-    //主要是因为初始化时有概率初始化失败
+    //getAmount();//先执行获取灯的数量主要是因为初始化时有概率初始化失败
     print("led amount is: "+LEDamount.toString());
 
     turnLightToUDP();
@@ -118,69 +191,75 @@ class customPacket {//ver0.4
     data2.setUint8(2, 0x00);
     data2.setUint8(3, (LEDamount >> 0) & 0xff);//持续多长
     data2.setUint8(4, (LEDamount >> 8) & 0xff);
-    Timer.periodic(timeout2, (timer) { //callback function
-      print(count);
-      count++;
-      //每隔1s
-      switch (count){
-        case 1:{
-          for(int i=5;i<LEDamount*3+5;){
-            data2.setUint8(i, 0x11);//R
-            data2.setUint8(i+1, 0x00);
-            data2.setUint8(i+2, 0x00);
-            i = i + 3;
-          }
-        }break;
-        case 2:{
-          for(int i=5;i<LEDamount*3+5;){
-            data2.setUint8(i, 0x00);//G
-            data2.setUint8(i+1, 0x11);
-            data2.setUint8(i+2, 0x00);
-            i = i + 3;
-          }
-        }break;
-        case 3:{
-          for(int i=5;i<LEDamount*3+5;){
-            data2.setUint8(i, 0x00);//B
-            data2.setUint8(i+1, 0x00);
-            data2.setUint8(i+2, 0x11);
-            i = i + 3;
-          }
-        }break;
-        case 4:{
-          for(int i=5;i<LEDamount*3+5;i++){//random
-            data2.setUint8(i, rand.nextInt(128) & 0xff);
-          }
-        }break;
-        case 5:{
-          for(int i=5;i<LEDamount*3+5;i++){//random2
-            data2.setUint8(i, rand.nextInt(64) & 0xff);
-          }
-        }break;
-        case 6:{
-          for(int i=5;i<LEDamount*3+5;i++){//close
-            data2.setUint8(i, 0x00);
-          }
-        }break;
-      }
-      setData(LEDamount*3+5, sendData2);
-      sendUDP();
-
-      if(count > 6)
-        timer.cancel();  // 取消定时器
-    });
-  }
+    if(LEDamount>0){//只有在获取到灯的数量之后才执行测试
+      Timer.periodic(timeout2, (timer) { //callback function
+        print(count);
+        count++;
+        //每隔1s
+        switch (count){
+          case 1:{
+            for(int i=5;i<LEDamount*3+5;){
+              data2.setUint8(i, 0x11);//R
+              data2.setUint8(i+1, 0x00);
+              data2.setUint8(i+2, 0x00);
+              i = i + 3;
+            }
+          }break;
+          case 2:{
+            for(int i=5;i<LEDamount*3+5;){
+              data2.setUint8(i, 0x00);//G
+              data2.setUint8(i+1, 0x11);
+              data2.setUint8(i+2, 0x00);
+              i = i + 3;
+            }
+          }break;
+          case 3:{
+            for(int i=5;i<LEDamount*3+5;){
+              data2.setUint8(i, 0x00);//B
+              data2.setUint8(i+1, 0x00);
+              data2.setUint8(i+2, 0x11);
+              i = i + 3;
+            }
+          }break;
+          case 4:{
+            for(int i=5;i<LEDamount*3+5;i++){//random
+              data2.setUint8(i, rand.nextInt(128) & 0xff);
+            }
+          }break;
+          case 5:{
+            for(int i=5;i<LEDamount*3+5;i++){//random2
+              data2.setUint8(i, rand.nextInt(64) & 0xff);
+            }
+          }break;
+          case 6:{
+            for(int i=5;i<LEDamount*3+5;i++){//close
+              data2.setUint8(i, 0x00);
+            }
+          }break;
+        }
+        setData(LEDamount*3+5, sendData2);
+        sendUDP();
+        if(count > 6)
+          timer.cancel();  // 取消定时器
+      });
+    }//endif
+  }//end function
 
   void sendTCP() async {
     //Uint8List returnMessage;
-    InternetAddress LEDaddr = InternetAddress("192.168.4.1");
-    Socket socket = await Socket.connect(LEDaddr, 6600); //TCP
-    socket.add(message);//发送数据包
-    socket.listen((datarec) {
-      //print("TCP return :" + datarec.toString());
-    }); //TCPEND
-    await socket.flush();
-    await socket.close();
+    try{
+      InternetAddress LEDaddr = InternetAddress("192.168.4.1");
+      Socket socket = await Socket.connect(LEDaddr, 6600); //TCP
+      socket.add(message);//发送数据包
+
+      socket.listen((datarec) {
+        //print("TCP return :" + datarec.toString());
+      }); //TCPEND
+      await socket.flush();
+      await socket.close();
+    }catch(e){
+      print("Link end.");
+    }
   }
   void sendUDP(){
     InternetAddress LEDaddr = InternetAddress("192.168.4.1");
@@ -192,12 +271,13 @@ class customPacket {//ver0.4
           var recData = socket
               .receive()
               .data;
-          print(recData);
+          //print(recData);
         }
       });
     //print("sendUDP");
     }); //UDPEND
   }
+
   bool setData(int length,Uint8List dataIn){
     //输入长度，Uint8List类型的数组，自动拼装头部和校验部分到message
     dataLength = length;//每个数据包数据部分长度
@@ -223,8 +303,9 @@ class customPacket {//ver0.4
 
     return true;
   }
+
   void getAmount() async {//获取灯的数量，不需要手动调用，实例化时自动调用一次
-    Uint8List message2 = Uint8List(9);//发送的数据包包头
+    Uint8List message2 = Uint8List(9);//发送的数据包
     var data2 = ByteData.view(message2.buffer);
     int num2 = 0x53485955;
     data2.setUint32(0, num2);//头部4字节
