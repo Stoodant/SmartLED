@@ -1,3 +1,32 @@
+import 'dart:async';
+import 'dart:io';
+import 'dart:convert';
+import 'dart:math';
+import 'dart:typed_data';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  // This widget is the root of your application.
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      home: MyHomePage(title: 'Flutter Demo Home Page'),
+    );
+  }
+}
+class clas1 {
+  int i = 0;
+}
 class customPacket {//Ver.Alpha 0.1
 //  实例化后请不要直接执行子函数，初始化未完成的情况下大部分子函数都会出错
 //  调试的时候请像下面这样调用，定时执行来等待初始化完成
@@ -17,7 +46,7 @@ class customPacket {//Ver.Alpha 0.1
   int totalMemory = 0;
   int usedMemory = 0;
 
-  customPacket() {//构造函数，初始化
+  customPacket() {
     getAmount();//获取灯的数量
     getMemoryInfo();//获取空间信息
     print("created.");
@@ -538,5 +567,150 @@ class customPacket {//Ver.Alpha 0.1
       print("Link error");
       error = true;
     }
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  MyHomePage({Key key, this.title}) : super(key: key);
+
+  final String title;
+
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  int _counter = 0;
+  _incrementCounter() async {
+    var cust = customPacket();
+
+    Uint8List sendData = Uint8List(4800);
+      var data = ByteData.view(sendData.buffer);
+      var rand = Random();
+      for(int i=0;i<4800;i++){//random2
+        data.setUint8(i, rand.nextInt(64) & 0xff);
+      }
+
+      const timeout = const Duration(seconds: 3);
+      Timer(timeout, () {
+        print("Timer start");
+        //cust.writeFile(3, sendData);
+        cust.test();
+      });
+
+
+
+//    cust.turnLightToUDP();
+//
+//    const timeout = const Duration(seconds: 3);
+//    Timer(timeout, () {
+//      cust.startUDPStream();
+//      Uint8List sendData = Uint8List(1200);
+//      var data = ByteData.view(sendData.buffer);
+//      var rand = Random();
+//      const timeo = const Duration(milliseconds: 150);//0.2s一次
+//      int count = 1;
+//      Timer.periodic(timeo, (timer) { //callback function
+//        for(int i=0;i<1200;i++){//random2
+//          data.setUint8(i, rand.nextInt(64) & 0xff);
+//        }
+//        cust.setStreamMessage(count, sendData);
+//        count++;
+//        if(count>100){
+//          cust.endUDPStream();
+//          timer.cancel();
+//        }
+//      });
+//    });
+
+//      const timeo = const Duration(milliseconds: 5000);//5s一次
+//      int count = 1;
+//      Timer.periodic(timeo, (timer) { //callback function
+//        if(count==1){
+//          cust.openFile(1);
+//        }
+//        if(count==2){
+//          cust.closeFile();
+//        }
+//        count++;
+//        if(count>2){
+//          timer.cancel();
+//        }
+//      });
+
+
+
+
+
+//    Uint8List sendData = Uint8List(14);
+//    var data = ByteData.view(sendData.buffer);
+//    data.setUint8(0, 0x01);
+//    data.setUint8(1, 0xff);
+//    data.setUint8(2, 0x00);
+//    data.setUint8(3, 0x03);
+//    data.setUint8(4, 0x00);
+//
+//    data.setUint8(5, 0x22);
+//    data.setUint8(6, 0x00);
+//    data.setUint8(7, 0x00);
+//
+//    data.setUint8(8, 0x00);
+//    data.setUint8(9, 0x22);
+//    data.setUint8(10, 0x00);
+//
+//    data.setUint8(11, 0x00);
+//    data.setUint8(12, 0x00);
+//    data.setUint8(13, 0x22);
+//    cust.setData(14, sendData);
+//    cust.sendUDP();
+
+
+    print("Finish.");
+
+//  const timeout = const Duration(seconds: 1);
+//  Timer(timeout, () {
+//    //到时回调
+//    //cust.openFile(2);
+//    cust.testLED();
+//  });
+  //随机颜色
+
+
+
+
+
+
+
+  }
+
+
+  @override
+  Widget build(BuildContext context) {
+
+    return Scaffold(
+      appBar: AppBar(
+
+        title: Text(widget.title),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            Text(
+              'You have pushed the button this many times:',
+            ),
+            Text(
+              '$_counter',
+              style: Theme.of(context).textTheme.headline4,
+            ),
+          ],
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _incrementCounter,
+        tooltip: 'Increment',
+        child: Icon(Icons.add),
+      ), // This trailing comma makes auto-formatting nicer for build methods.
+    );
   }
 }
