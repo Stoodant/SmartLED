@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
 
+
 class customPacket {//Ver.Alpha 0.1
 //  实例化后请不要直接执行子函数，初始化未完成的情况下大部分子函数都会出错
 //  调试的时候请像下面这样调用，定时执行来等待初始化完成
