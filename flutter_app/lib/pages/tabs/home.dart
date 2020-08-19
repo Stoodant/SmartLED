@@ -20,6 +20,7 @@ class _HomePageState extends State<HomePage> {
   List<String> _contents = [];
   List _nameList = [];
 
+  //获取系统图形函数，从res文件中读取，通过循环遍历
   List<Widget> _getData(List list) {
     double _widthOffset = _treeWidth * 0.5;
     List<Widget> res = [];
@@ -34,6 +35,7 @@ class _HomePageState extends State<HomePage> {
           list[i]["pwm"]));
     }
 
+    //添加一个container来存放图像名称
     res.add(Container(
       child: Text(list[0]["name"],style: TextStyle(fontSize: 16)),
       margin: EdgeInsets.only(top:260),
@@ -84,8 +86,6 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     // TODO: implement initState
     //首先先从nameData文件中获取总共有多少文件
-
-    setState(() {});
 
     _getName().then((value) {
       print("getName success!!!!!!!!!!!!!");
