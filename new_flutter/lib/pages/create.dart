@@ -28,6 +28,7 @@ class _drawPageState extends State<drawPage>
   //将要写入文件的值
   List res = [];
 
+  //文本控制器，用于控制输入的文字
   var textController = TextEditingController();
 
   //该函数为初始化typeList和colorList的数量，默认初始化为false和黑色
@@ -61,13 +62,15 @@ class _drawPageState extends State<drawPage>
     super.initState();
   }
 
+  //获取本地文件路劲的函数
   Future<File> _getLocalFile(String str) async {
     // get the path to the document directory.
     String dir = (await getApplicationDocumentsDirectory()).path;
     print(dir);
-    return new File('$dir/$str.json');
+    return File('$dir/$str.json');
   }
 
+  //随机生成函数，用于随机生成保存的文件名
   String getRandom() {
     String alphabet = 'qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM';
     int strlenght = 10;
@@ -81,7 +84,10 @@ class _drawPageState extends State<drawPage>
     return left;
   }
 
+
+  //保存函数，输入的参数为保存的文件名
   void _save(String str) async {
+    //循环输入保存的参数
     for (var i = 0; i < showData.length; i++) {
       res.add({
         "dx": showData[i]["left"],
@@ -94,10 +100,13 @@ class _drawPageState extends State<drawPage>
         "name": textController.text
       });
     }
+
+    //将结果res转换成String类型，存入到文件中
     String result = json.encode(res);
     File file = await _getLocalFile(str);
     file.writeAsString(result);
 
+    //同时将新保存的文件名放入到nameDate文件中，通过@符号来进行分割
     File tmp = await _getLocalFile("nameData");
     tmp.writeAsString(str + "@", mode: FileMode.append);
 
@@ -114,6 +123,8 @@ class _drawPageState extends State<drawPage>
     super.dispose();
   }
 
+  //显示对话框的函数，这里采用了slideDialog的封装组件，后续会考虑更换对话框组件
+  //在输入不当的时候，采用了awesomeDialog组件，用于提醒用户，增加交互性
   void _showDialog() {
     slideDialog.showSlideDialog(
       context: context,

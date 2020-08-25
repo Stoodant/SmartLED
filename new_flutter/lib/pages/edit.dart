@@ -13,8 +13,9 @@ import 'package:awesome_dialog/awesome_dialog.dart';
 class editPage extends StatefulWidget {
   List getJson;
   String fileName;
-
   //editPage({Key key, @required this.getJson}) : super(key: key);
+
+  //editPage页面创建时需要传入两个参数，一个是构建LED的json文件，一个是打开的文件名
   editPage(List gjson, String name) {
     this.getJson = gjson;
     this.fileName = name;
@@ -68,13 +69,16 @@ class _editPageState extends State<editPage>
   //动画控制器
   AnimationController _controller;
 
+  //文本控制器
   var textController = TextEditingController();
 
+  //获取color函数，从String字符中获取对应的Color对象
   Color getColor(String str) {
     String objStr = str.substring(str.indexOf("(") + 1, str.indexOf(")"));
     return Color(int.parse(objStr));
   }
 
+  //同create页面的showDialog函数一样
   void _showDialog(String str) {
     slideDialog.showSlideDialog(
       context: context,
@@ -130,6 +134,7 @@ class _editPageState extends State<editPage>
 
     //getTypeAndColor(getJSON);
 
+    //从传入的参数json文件中，进行相应的初始化，
     for (var i = 0; i < getJSON.length; i++) {
       typeList.add(getJSON[i]["type"] == 1 ? false : true);
       colorList.add(getColor(getJSON[i]["begincolor"]));
@@ -145,6 +150,7 @@ class _editPageState extends State<editPage>
           .animate(_controller));
     }
 
+    //在文本框中填入相应的文件名
     textController.text = getJSON[0]["name"];
 
     setState(() {});
@@ -209,6 +215,7 @@ class _editPageState extends State<editPage>
     //print(result is String);
   }
 
+  //删除函数，通过传入参数文件名，来删除掉对应的文件
   void _delete(String name) async {
     File tmp = await _getLocalFile(name);
     tmp.deleteSync(recursive: false);
@@ -216,6 +223,7 @@ class _editPageState extends State<editPage>
       print("删除成功！！！！！");
     });
 
+    //同时需要在文件nameData中删除掉相应的文件名
     File file = await _getLocalFile("nameData");
     String str = await file.readAsString();
     String res = str.substring(0, str.indexOf(name)) +

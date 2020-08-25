@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:slide_popup_dialog/slide_popup_dialog.dart' as slideDialog;
+import '../../res/control.dart';
+import 'dart:async';
+import 'dart:io';
+import 'dart:math';
+import 'dart:typed_data';
 
 class CategoryPage extends StatefulWidget {
   CategoryPage({Key key}) : super(key: key);
@@ -9,42 +13,31 @@ class CategoryPage extends StatefulWidget {
 }
 
 class _CategoryPageState extends State<CategoryPage> {
-  var textController = TextEditingController();
-
   @override
   void dispose() {
     // Clean up the controller when the widget is disposed.
-    textController.dispose();
     super.dispose();
   }
 
-  void _showDialog() {
-    slideDialog.showSlideDialog(
-      context: context,
-      child: Column(
-        children: <Widget>[
-          Text("请输入自定义名称"),
-          SizedBox(
-            height: 20,
-          ),
-          TextField(
-            decoration: InputDecoration(
-                hintText: "input name", border: OutlineInputBorder()),
-            controller: textController,
-          ),
-          SizedBox(height: 40),
-          Container(
-            child: FloatingActionButton(
-              child: Text("确定"),
-              onPressed: () {
-                print(textController.text);
-              },
-            ),
-            margin: EdgeInsets.only(left: 280),
-          )
-        ],
-      ),
-    );
+  void testCP() {
+    const timeout = const Duration(seconds: 3); //延迟3秒
+    Timer(timeout, () {
+      //在这里调用
+      //实例化
+      customPacket cp = customPacket();
+
+      //测试test函数
+      print("test cp's test!!!");
+      cp.test();
+
+      //测试getMemoryInfo函数
+      print("test cp's getMemoryInfo!!!");
+      cp.getMemoryInfo();
+
+      //测试testLED函数
+      print("test cp's testLED!!!");
+      cp.testLED();
+    });
   }
 
   @override
@@ -54,9 +47,9 @@ class _CategoryPageState extends State<CategoryPage> {
         children: <Widget>[
           Container(
             child: FloatingActionButton(
-              onPressed: () => _showDialog(),
-              heroTag: "toshow",
-              child: Text("Show"),
+              onPressed: () => testCP(),
+              heroTag: "totest",
+              child: Text("Test"),
             ),
             width: 50,
             height: 50,
