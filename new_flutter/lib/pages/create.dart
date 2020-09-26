@@ -264,33 +264,34 @@ class _drawPageState extends State<drawPage>
                 pickerAreaHeightPercent: 0.2,
               ),
               Container(
-                  child: Row(
-                children: <Widget>[
-                  Container(
-                    //这是控制是否闪烁的按钮，当按下该按钮时，type为反就可以了
-                    child: FloatingActionButton(
-                      onPressed: () => type = !type,
-                      child: Text("闪烁"),
-                      heroTag: "spark",
+                child: Row(
+                  children: <Widget>[
+                    Container(
+                      //这是控制是否闪烁的按钮，当按下该按钮时，type为反就可以了
+                      child: FloatingActionButton(
+                        onPressed: () => type = !type,
+                        child: Text("闪烁"),
+                        heroTag: "spark",
+                      ),
+                      width: 50,
+                      height: 50,
+                      margin: EdgeInsets.only(left: 220),
                     ),
-                    width: 50,
-                    height: 50,
-                    margin: EdgeInsets.only(left: 220),
-                  ),
-                  Container(
-                    child: FloatingActionButton(
-                      onPressed: () {
-                          _showDialog();
-                      },
-                      child: Text("保存"),
-                      heroTag: "save",
+                    Container(
+                      child: FloatingActionButton(
+                        onPressed: () {
+                            _showDialog();
+                        },
+                        child: Text("保存"),
+                        heroTag: "save",
+                      ),
+                      width: 50,
+                      height: 50,
+                      margin: EdgeInsets.only(left: 20),
                     ),
-                    width: 50,
-                    height: 50,
-                    margin: EdgeInsets.only(left: 20),
-                  ),
-                ],
-              )),
+                  ],
+                )
+              ),
             ],
           ),
         ));

@@ -307,8 +307,6 @@ class customPacket {//Ver.Alpha 0.1
         data.setUint8(6, check);
         data.setUint8(7, check2);
 
-
-
         var udpSocket = RawDatagramSocket.bind(InternetAddress.anyIPv4, 0);
         udpSocket.then((socket) {
           socket.send(finalStreamMessage, LEDaddr, 6000); //发送数据

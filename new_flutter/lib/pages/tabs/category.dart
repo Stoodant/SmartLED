@@ -4,6 +4,52 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 import 'dart:typed_data';
+import 'package:camera/camera.dart';
+import 'package:flutter/cupertino.dart';
+
+class CameraApp extends StatefulWidget {
+  @override
+  _CameraAppState createState() => _CameraAppState();
+}
+
+class _CameraAppState extends State<CameraApp> {
+  CameraController controller;
+
+  List<CameraDescription> cameras;
+
+  Future<void> getCamera() async {
+    cameras = await availableCameras();
+    controller = CameraController(cameras[0], ResolutionPreset.medium);
+    controller.initialize().then((_) {
+      if (!mounted) {
+        return;
+      }
+      setState(() {});
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    getCamera();
+  }
+
+  @override
+  void dispose() {
+    controller?.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (!controller.value.isInitialized) {
+      return Container();
+    }
+    return AspectRatio(
+        aspectRatio: controller.value.aspectRatio,
+        child: CameraPreview(controller));
+  }
+}
 
 class CategoryPage extends StatefulWidget {
   CategoryPage({Key key}) : super(key: key);
@@ -19,27 +65,6 @@ class _CategoryPageState extends State<CategoryPage> {
     super.dispose();
   }
 
-  void testCP() {
-    const timeout = const Duration(seconds: 3); //延迟3秒
-    Timer(timeout, () {
-      //在这里调用
-      //实例化
-      customPacket cp = customPacket();
-
-      //测试test函数
-      print("test cp's test!!!");
-      cp.test();
-
-      //测试getMemoryInfo函数
-      print("test cp's getMemoryInfo!!!");
-      cp.getMemoryInfo();
-
-      //测试testLED函数
-      print("test cp's testLED!!!");
-      cp.testLED();
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     return Column(
@@ -47,12 +72,10 @@ class _CategoryPageState extends State<CategoryPage> {
         children: <Widget>[
           Container(
             child: FloatingActionButton(
-              onPressed: () => testCP(),
-              heroTag: "totest",
-              child: Text("Test"),
+              onPressed: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => CameraApp())),
+              heroTag: "camera",
             ),
-            width: 50,
-            height: 50,
           )
         ]);
   }

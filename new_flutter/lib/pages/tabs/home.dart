@@ -186,7 +186,7 @@ class _HomePageState extends State<HomePage> {
           Container(
             child: FloatingActionButton(
               onPressed: () {
-                Navigator.of(context).pushNamed("draw");
+                Navigator.of(context).pushNamed("draw"); 
               },
               heroTag: "home",
               child: Text("新建"),
