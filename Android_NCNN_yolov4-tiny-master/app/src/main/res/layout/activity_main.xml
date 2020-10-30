@@ -19,8 +19,8 @@
         android:id="@+id/imageView"
         android:layout_width="0dp"
         android:layout_height="400dp"
-        android:src="@color/colorPrimary"
         android:background="@color/colorPrimary"
+        android:src="@color/colorPrimary"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
@@ -32,17 +32,17 @@
         android:id="@+id/view_finder"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        app:layout_constraintDimensionRatio="h,4:3"
-        app:layout_constraintTop_toBottomOf="@+id/imageView"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintDimensionRatio="h,4:3"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/imageView" />
 
     <TextView
         android:id="@+id/textView"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
         android:layout_marginLeft="5dp"
+        android:layout_marginTop="10dp"
         android:text="NMS"
         app:layout_constraintEnd_toEndOf="@+id/txtThresh"
         app:layout_constraintStart_toStartOf="parent"
@@ -66,12 +66,12 @@
         android:id="@+id/txtThresh"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
         android:layout_marginLeft="5dp"
+        android:layout_marginTop="8dp"
         android:text="Threshold"
         app:layout_constraintTop_toBottomOf="@+id/textView"
-        tools:layout_editor_absoluteX="0dp"
-        tools:ignore="MissingConstraints" />
+        tools:ignore="MissingConstraints"
+        tools:layout_editor_absoluteX="0dp" />
 
     <SeekBar
         android:id="@+id/threshold_seek"
@@ -101,11 +101,26 @@
         android:id="@+id/tv_info"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="000x000 FPS:x.xxx"
         android:paddingLeft="5dp"
         android:paddingTop="2dp"
+        android:text="000x000 FPS:x.xxx"
         app:layout_constraintStart_toEndOf="@+id/view_finder"
-        app:layout_constraintTop_toBottomOf="@+id/imageView"
-        />
+        app:layout_constraintTop_toBottomOf="@+id/imageView" />
+
+    <Button
+        android:id="@+id/button4"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Begin"
+        app:layout_constraintStart_toEndOf="@+id/valTxtView"
+        app:layout_constraintTop_toBottomOf="@+id/threshold_seek" />
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="200dp"
+        android:layout_height="50dp"
+        android:text="TextView"
+        app:layout_constraintStart_toEndOf="@+id/view_finder"
+        app:layout_constraintTop_toBottomOf="@+id/tv_info" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

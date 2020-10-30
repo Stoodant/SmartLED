@@ -40,12 +40,16 @@ import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.Calendar;
+import java.util.Random;
 
 public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
@@ -70,6 +74,32 @@ public class MainActivity extends AppCompatActivity {
     private int width;
     private int height;
 
+    private Button mBtnCircle;
+    private Box[] _res;
+    private Bitmap _bitmap;
+    private TextView tv3;
+    private String[] _flags;
+    private Point[][] _points;
+    private int number = 400;
+    private int ledNumber;
+
+    public String generateRandomFilename(){
+        String RandomFilename = "";
+        Random rand = new Random();//生成随机数
+        int random = rand.nextInt();
+
+        Calendar calCurrent = Calendar.getInstance();
+        int intDay = calCurrent.get(Calendar.DATE);
+        int intMonth = calCurrent.get(Calendar.MONTH) + 1;
+        int intYear = calCurrent.get(Calendar.YEAR);
+        String now = String.valueOf(intYear) + "_" + String.valueOf(intMonth) + "_" +
+                String.valueOf(intDay) + "_";
+
+        RandomFilename = now + String.valueOf(random > 0 ? random : ( -1) * random);
+
+        return RandomFilename;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -89,6 +119,8 @@ public class MainActivity extends AppCompatActivity {
         tvInfo = findViewById(R.id.tv_info);
         nmsSeekBar = findViewById(R.id.nms_seek);
         thresholdSeekBar = findViewById(R.id.threshold_seek);
+        tv3 = findViewById(R.id.textView3);
+
         final String format = "Thresh: %.2f, NMS: %.2f";
         thresholdTextview.setText(String.format(Locale.ENGLISH, format, threshold, nms_threshold));
         nmsSeekBar.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
@@ -125,6 +157,7 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
+
         Button inference = findViewById(R.id.button);
         inference.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -156,6 +189,108 @@ public class MainActivity extends AppCompatActivity {
                 startCamera();
             }
         });
+
+        mBtnCircle = findViewById(R.id.button4);
+        mBtnCircle.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    ledNumber = _res.length;
+                    code();
+                } catch (UnknownHostException e) {
+                    e.printStackTrace();
+                }
+
+//                Intent intent = new Intent();
+//                Bundle bundle = new Bundle();
+//                int len = _res.length;
+//                bundle.putString("length",Integer.toString(len));
+//
+//                for(int i = 0;i < len; i++){
+//                    bundle.putString(Integer.toString(i)+"color",Integer.toString(_res[i].getColor()));
+//                    bundle.putString(Integer.toString(i)+"x0",Float.toString(_res[i].getX0()));
+//                    bundle.putString(Integer.toString(i)+"x1",Float.toString(_res[i].getX1()));
+//                    bundle.putString(Integer.toString(i)+"y0",Float.toString(_res[i].getY0()));
+//                    bundle.putString(Integer.toString(i)+"y1",Float.toString(_res[i].getY1()));
+//                    bundle.putString(Integer.toString(i)+"label",_res[i].getLabel());
+//                    bundle.putString(Integer.toString(i)+"label2",Integer.toString(_res[i].getLabel2()));
+//                    bundle.putString(Integer.toString(i)+"score",Float.toString(_res[i].getScore()));
+//                }
+//
+////                String tmpFileName = generateRandomFilename();
+////                BitmapUtil bmp = new BitmapUtil();
+////                bmp.saveBitmap2file(_bitmap,tmpFileName);
+////                bundle.putString("bitmap",tmpFileName);
+//
+//                intent.putExtras(bundle);
+//                intent.setClass(MainActivity.this,EditActivity.class);
+//
+//                //
+//                startActivity(intent);
+            }
+        });
+    }
+
+    //讲res转换成point
+    private void res2point(Point[] points,Box[] boxes){
+        for (int i = 0; i < boxes.length;i++){
+            float x = (boxes[i].x1 + boxes[i].x0)/2.0f;
+            float y = (boxes[i].y1 + boxes[i].y0)/2.0f;
+            points[i] = new Point(x,y,true);
+        }
+    }
+
+    //合并函数，用于矫正两次识别结果点位之间的偏差
+    private void merge(Point[] before,Point[] after,double threshold){
+        for(int i=0;i<before.length;i++){
+            for(int j=0;j<after.length;j++){
+                double dis = Math.sqrt((before[i].x0-after[j].x0)*(before[i].x0-after[j].x0)+(before[i].y0-after[j].y0)*(before[i].y0-after[j].y0));
+                if(dis < threshold && before[i].flag && after[j].flag){
+                    after[j].x0 = before[i].x0;
+                    after[j].y0 = before[i].y0;
+                }
+                before[i].id = (before[i].id << 1) + (after[j].flag?1:0);
+            }
+        }
+    }
+
+
+    //判断编码
+    private void code() throws UnknownHostException {
+        //第一次将全部灯点亮
+        tv3.setText("检测所有的灯");
+        //send();
+        customPacket cp = new customPacket();
+        boolean[] allLED = new boolean[number];
+        int[] allColor = new int[3*number];
+        for(int i=0;i<number;i++){
+            allLED[i] = true;
+            Random random = new Random();
+            allColor[3*i] = random.nextInt(256);
+            allColor[3*i+1] = random.nextInt(256);
+            allColor[3*i+2] = random.nextInt(256);
+        }
+        cp.sendAnyLEDData(number,allLED,allColor);
+
+        Point[] allPoints = new Point[ledNumber];
+        res2point(allPoints,_res);
+
+        System.out.println("识别出来的灯的总数是："+allPoints.length+"!!!!!!!!!!!!!!!!!!!!!!!");
+//        for(Point p:allPoints){
+//            System.out.println(p.x0 +" "+ p.y0 +" "+ p.flag);
+//        }
+        //tv3.setText("开始识别");
+        //开始编码
+//        for(int i=0;i<10;i++){
+//            //send();
+//            Point[] tmp = new Point[number];
+//            res2point(tmp,_res);
+//            _points[i] = tmp;
+//            merge(allPoints,_points[i],1);
+//            tv3.setText("第 "+i+" 次");
+//        }
+//        tv3.setText("识别结束");
+
     }
 
     private void updateTransform() {
@@ -229,8 +364,11 @@ public class MainActivity extends AppCompatActivity {
                     width = bitmapsrc.getWidth();
                     height = bitmapsrc.getHeight();
                     Bitmap bitmap = Bitmap.createBitmap(bitmapsrc, 0, 0, width, height, matrix, false);
-
                     Box[] result = YOLOv5.detect(bitmap, threshold, nms_threshold);
+
+                    _res = result;
+                    //摄像头运行这一块内容
+
                     final Bitmap mutableBitmap = bitmap.copy(Bitmap.Config.ARGB_8888, true);
                     Canvas canvas = new Canvas(mutableBitmap);
                     final Paint boxPaint = new Paint();
@@ -318,6 +456,17 @@ public class MainActivity extends AppCompatActivity {
         Bitmap image = getPicture(data.getData());
         Box[] result = YOLOv5.detect(image, threshold, nms_threshold);
         Bitmap mutableBitmap = image.copy(Bitmap.Config.ARGB_8888, true);
+
+        _res = result;
+        _bitmap = mutableBitmap;
+        if(result == null){
+            tv3.setText("22222");
+        }
+        else {
+            tv3.setText(result.length);
+        }
+        //tv3.setText(_bitmap.getHeight()+" "+_bitmap.getWidth());
+
         Canvas canvas = new Canvas(mutableBitmap);
         final Paint boxPaint = new Paint();
         boxPaint.setAlpha(200);
