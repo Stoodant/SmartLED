@@ -123,4 +123,14 @@
         app:layout_constraintStart_toEndOf="@+id/view_finder"
         app:layout_constraintTop_toBottomOf="@+id/tv_info" />
 
+    <Button
+        android:id="@+id/button5"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="96dp"
+        android:text="test"
+        app:layout_constraintRight_toRightOf="@+id/button4"
+        app:layout_constraintStart_toEndOf="@+id/valTxtView"
+        app:layout_constraintTop_toBottomOf="@+id/threshold_seek" />
+
 </androidx.constraintlayout.widget.ConstraintLayout>

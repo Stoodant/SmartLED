@@ -43,13 +43,19 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.ByteArrayOutputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.Socket;
 import java.net.UnknownHostException;
 import java.nio.ByteBuffer;
 import java.util.Locale;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.Calendar;
 import java.util.Random;
+
+import static java.lang.Math.pow;
 
 public class MainActivity extends AppCompatActivity {
     private static final int REQUEST_EXTERNAL_STORAGE = 1;
@@ -75,13 +81,13 @@ public class MainActivity extends AppCompatActivity {
     private int height;
 
     private Button mBtnCircle;
+    private Button mBtnTest;
     private Box[] _res;
-    private Bitmap _bitmap;
     private TextView tv3;
-    private String[] _flags;
-    private Point[][] _points;
-    private int number = 400;
+    public int number = 400;
     private int ledNumber;
+    public Point[] resPoints;
+    int[] startLED;
 
     public String generateRandomFilename(){
         String RandomFilename = "";
@@ -190,16 +196,53 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        mBtnTest = findViewById(R.id.button5);
+        mBtnTest.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    customPacket cp = new customPacket();
+                    boolean[] ledId = new boolean[number];
+                    for(Point p :resPoints){
+                        for(int i=0;i<number;i++){
+                            if(startLED[i] == p.id){
+                                ledId[i] = true;
+                                break;
+                            }
+                        }
+                    }
+                    int[] ledCol = new int[3*number];
+                    for(int i = 0;i<number;i++){
+                        ledCol[3*i] = 0;
+                        ledCol[3*i+1] = 0;
+                        ledCol[3*i+2] = 0xff;
+                    }
+                    cp.sendAnyLEDData(number,ledId,ledCol);
+
+                } catch (UnknownHostException e) {
+                    e.printStackTrace();
+                }
+
+            }
+        });
+
         mBtnCircle = findViewById(R.id.button4);
         mBtnCircle.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                try {
-                    ledNumber = _res.length;
-                    code();
-                } catch (UnknownHostException e) {
-                    e.printStackTrace();
-                }
+                //ledNumber = _res.length;
+
+                new Thread(new Runnable(){
+                    @Override
+                    public void run() {
+                        try {
+                            Thread.sleep(200);
+                            code();
+                        } catch (IOException | InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }).start();
 
 //                Intent intent = new Intent();
 //                Bundle bundle = new Bundle();
@@ -232,24 +275,27 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //讲res转换成point
-    private void res2point(Point[] points,Box[] boxes){
+    private Point[] res2point(Box[] boxes){
+        Point[] tmp = new Point[boxes.length];
         for (int i = 0; i < boxes.length;i++){
             float x = (boxes[i].x1 + boxes[i].x0)/2.0f;
             float y = (boxes[i].y1 + boxes[i].y0)/2.0f;
-            points[i] = new Point(x,y,true);
+            tmp[i] = new Point(x,y,true);
         }
+        return tmp;
     }
 
     //合并函数，用于矫正两次识别结果点位之间的偏差
     private void merge(Point[] before,Point[] after,double threshold){
         for(int i=0;i<before.length;i++){
             for(int j=0;j<after.length;j++){
-                double dis = Math.sqrt((before[i].x0-after[j].x0)*(before[i].x0-after[j].x0)+(before[i].y0-after[j].y0)*(before[i].y0-after[j].y0));
-                if(dis < threshold && before[i].flag && after[j].flag){
-                    after[j].x0 = before[i].x0;
-                    after[j].y0 = before[i].y0;
+                double dis = Math.sqrt(pow(before[i].x0-after[j].x0,2)+pow(before[i].y0-after[j].y0,2));
+                if(dis < threshold){
+                    before[i].x0 = (before[i].x0 + after[j].x0)/2.0f;
+                    before[i].y0 = (before[i].y0 + after[j].y0)/2.0f;
+                    before[i].id = (before[i].id << 1) + (after[j].flag?1:0);
+                    break;
                 }
-                before[i].id = (before[i].id << 1) + (after[j].flag?1:0);
             }
         }
     }
@@ -258,39 +304,82 @@ public class MainActivity extends AppCompatActivity {
     //判断编码
     private void code() throws UnknownHostException {
         //第一次将全部灯点亮
-        tv3.setText("检测所有的灯");
+//        tv3.setText("检测所有的灯");
         //send();
         customPacket cp = new customPacket();
         boolean[] allLED = new boolean[number];
         int[] allColor = new int[3*number];
         for(int i=0;i<number;i++){
             allLED[i] = true;
-            Random random = new Random();
-            allColor[3*i] = random.nextInt(256);
-            allColor[3*i+1] = random.nextInt(256);
-            allColor[3*i+2] = random.nextInt(256);
+            allColor[3*i] = 0;
+            allColor[3*i+1] = 0xff;
+            allColor[3*i+2] = 0;
         }
-        cp.sendAnyLEDData(number,allLED,allColor);
 
-        Point[] allPoints = new Point[ledNumber];
-        res2point(allPoints,_res);
+        cp.sendAnyLEDData(number,allLED,allColor);
+        try {
+            Thread.sleep(2000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        //cp.sendAnyLEDData(number,allLED,allColor);
+        ledNumber = _res.length;
+        System.out.println("_res's length: "+_res.length+"?????????????????????????????????????????????");
+        Point[] allPoints = res2point(_res);
 
         System.out.println("识别出来的灯的总数是："+allPoints.length+"!!!!!!!!!!!!!!!!!!!!!!!");
-//        for(Point p:allPoints){
-//            System.out.println(p.x0 +" "+ p.y0 +" "+ p.flag);
-//        }
-        //tv3.setText("开始识别");
+        for(Point p:allPoints){
+            System.out.println(p.x0 +" "+ p.y0 +" "+ p.flag);
+        }
+//        tv3.setText("开始识别");
         //开始编码
-//        for(int i=0;i<10;i++){
-//            //send();
-//            Point[] tmp = new Point[number];
-//            res2point(tmp,_res);
-//            _points[i] = tmp;
-//            merge(allPoints,_points[i],1);
-//            tv3.setText("第 "+i+" 次");
-//        }
-//        tv3.setText("识别结束");
+        int[] col = new int[3];
+        col[0] = 0xff;
+        col[1] = 0;
+        col[2] = 0;
+        startLED = cp.startShiBie(number,col);
 
+        int num = 0;
+        for(int i=0;i<9;i++){
+            //send();
+            num += i;
+            new Thread(new Runnable(){
+                @Override
+                public void run() {
+                    System.out.println("================================================================runnable2");
+                    int pro = cp.shiBie();
+                    try {
+                        Thread.sleep(2000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }).start();
+
+            try {
+                Thread.sleep(1500);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            Point[] tmp = res2point(_res);
+            System.out.println("_res's length: "+_res.length+"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            System.out.println("allPoints's length: "+allPoints.length+"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+
+            System.out.println("tmp's length: "+tmp.length+"!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+            //tv3.setText("第 "+i+" 次!!!!!!");
+            merge(allPoints,tmp,8);
+            //tv3.setText("第 "+i+" 次");
+        }
+        System.out.println("(((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((((("+allPoints.length);
+        for(Point p:allPoints){
+            if(p != null){
+                System.out.println("this is p's id: "+p.id+"!!!!!!!!!!!!!!!!!!===========================================!!!!!!!!!!!!!!!!!!!!!!!!");
+            }
+        }
+        System.out.println(")))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))))");
+        //tv3.setText(" "+num);
+        //tv3.setText("识别结束");
+        resPoints = allPoints;
     }
 
     private void updateTransform() {
@@ -458,13 +547,6 @@ public class MainActivity extends AppCompatActivity {
         Bitmap mutableBitmap = image.copy(Bitmap.Config.ARGB_8888, true);
 
         _res = result;
-        _bitmap = mutableBitmap;
-        if(result == null){
-            tv3.setText("22222");
-        }
-        else {
-            tv3.setText(result.length);
-        }
         //tv3.setText(_bitmap.getHeight()+" "+_bitmap.getWidth());
 
         Canvas canvas = new Canvas(mutableBitmap);
