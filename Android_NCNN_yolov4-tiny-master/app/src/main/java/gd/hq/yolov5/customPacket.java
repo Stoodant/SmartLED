@@ -52,17 +52,17 @@ public class customPacket{
          * @param colors 长度为3的R，G，B，范围0-0xFF
          * @return 长度为LEDAmount的数组，数组每一位为对应灯的二进制编码
          */
-        sbCount = 1;//重置计数
+        sbCount = 0;//重置计数
         sbAmount = LEDAmount;
         result = new int[LEDAmount];
         for(int i=0;i<LEDAmount;i++){
-            result[i] = i+12;//12是随便写的起始数字
+            result[i] = i + 12;//12是随便写的起始数字
         }
-        result = randomArray(result);
+        result = randomArray(result);//随机打乱
         sbLED = new boolean[LEDAmount];
-        for(int i=0;i<LEDAmount;i++){
-            sbLED[i] = true;
-        }
+//        for(int i=0;i<LEDAmount;i++){
+//            sbLED[i] = true;
+//        }
         sbColor = new int[LEDAmount*3];
         for(int j=0;j<LEDAmount;j++){
             sbColor[j*3] = colors[0];
@@ -73,10 +73,10 @@ public class customPacket{
         return result;
     }
     int shiBie(){
-        if(sbCount>9||sbCount<1) return -1;//-1 未知错误
-        if(sbCount>0){
+        if(sbCount>9||sbCount<0) return -1;//-1 未知错误
+        if(sbCount>=0){
             for(int j=0;j<sbAmount;j++){
-                if(((result[j] >> (9-sbCount)) & 0x01) == 1){
+                if(((result[j] >> (8-sbCount)) & 0x01) == 1){
                     sbLED[j] = true;
                 }else{
                     sbLED[j] = false;
@@ -84,10 +84,13 @@ public class customPacket{
             }
         }
         sendAnyLEDData(sbAmount,sbLED,sbColor);
+        sendAnyLEDData(sbAmount,sbLED,sbColor);
+        System.out.println(Arrays.toString(sbLED));
         sbCount++;
-        System.out.println("shibie: !!!!!!!!!!!!!!!!!");
+        System.out.println("shibie: !!!!!!!!!!!!!!!!!    "+sbCount);
         if(sbCount == 9){//最后一次返回0
             sbCount = 0;
+            System.out.println("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!this is the nineth");
             return 0;
         }else{
             return sbCount;//不是最后一次返回一个正数

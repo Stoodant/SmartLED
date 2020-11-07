@@ -287,15 +287,20 @@ public class MainActivity extends AppCompatActivity {
 
     //合并函数，用于矫正两次识别结果点位之间的偏差
     private void merge(Point[] before,Point[] after,double threshold){
-        for(int i=0;i<before.length;i++){
+        for(int i=0;i<before.length;i++){   //遍历基准点位
+            boolean flag = false;           //标志是否找到
             for(int j=0;j<after.length;j++){
-                double dis = Math.sqrt(pow(before[i].x0-after[j].x0,2)+pow(before[i].y0-after[j].y0,2));
-                if(dis < threshold){
-                    before[i].x0 = (before[i].x0 + after[j].x0)/2.0f;
+                double dis = Math.sqrt(pow(before[i].x0-after[j].x0,2)+pow(before[i].y0-after[j].y0,2));    //识别点与基准点的位置
+                if(dis < threshold){    //如果小于阈值
+                    flag = true;        //代表找到了点
+                    before[i].x0 = (before[i].x0 + after[j].x0)/2.0f;   //修正位置
                     before[i].y0 = (before[i].y0 + after[j].y0)/2.0f;
-                    before[i].id = (before[i].id << 1) + (after[j].flag?1:0);
+                    before[i].id = (before[i].id << 1) + 1;             //在编码位置上置为1
                     break;
                 }
+            }
+            if(flag == false){  //如果找不到这个点
+                before[i].id = (before[i].id << 1) + 0;     //编码位置置为0
             }
         }
     }
@@ -307,17 +312,31 @@ public class MainActivity extends AppCompatActivity {
 //        tv3.setText("检测所有的灯");
         //send();
         customPacket cp = new customPacket();
-        boolean[] allLED = new boolean[number];
-        int[] allColor = new int[3*number];
-        for(int i=0;i<number;i++){
+        boolean[] allLED = new boolean[number]; //所有的led
+        int[] allColor = new int[3*number];     //随机颜色
+        for(int i=0;i<number;i++){      //按照红绿蓝一个个排开
             allLED[i] = true;
-            allColor[3*i] = 0;
-            allColor[3*i+1] = 0xff;
-            allColor[3*i+2] = 0;
+            int mod = i%3;
+            if(mod == 0){
+                allColor[3*i] = 0;
+                allColor[3*i+1] = 0xff;
+                allColor[3*i+2] = 0;
+            }
+            else if(mod == 1){
+                allColor[3*i] = 0;
+                allColor[3*i+1] = 0;
+                allColor[3*i+2] = 0xff;
+            }
+            else{
+                allColor[3*i] = 0xff;
+                allColor[3*i+1] = 0;
+                allColor[3*i+2] = 0;
+            }
         }
 
         cp.sendAnyLEDData(number,allLED,allColor);
-        try {
+        cp.sendAnyLEDData(number,allLED,allColor);
+        try {   //延迟
             Thread.sleep(2000);
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -340,14 +359,16 @@ public class MainActivity extends AppCompatActivity {
         startLED = cp.startShiBie(number,col);
 
         int num = 0;
+        final int[] check = {0};
         for(int i=0;i<9;i++){
             //send();
             num += i;
             new Thread(new Runnable(){
                 @Override
                 public void run() {
-                    System.out.println("================================================================runnable2");
+                    int i1 = check[0]++;
                     int pro = cp.shiBie();
+                    System.out.println("================================================================runnable2: the xulie is    "+pro);
                     try {
                         Thread.sleep(2000);
                     } catch (InterruptedException e) {
