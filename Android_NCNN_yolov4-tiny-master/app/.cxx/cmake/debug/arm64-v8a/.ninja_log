@@ -1,7 +1,0 @@
-# ninja log v5
-62	1603	624825530	CMakeFiles/yolov5.dir/jni_interface.cpp.o	1723a2e428e44e83
-1	1912	624825531	CMakeFiles/yolov5.dir/YoloV5.cpp.o	3809f8e4c096c6ad
-1913	3026	624825532	D:/project/Android_NCNN_yolov4-tiny-master/app/build/intermediates/cmake/debug/obj/arm64-v8a/libyolov5.so	9099960b05d4c8bf
-35	1804	625158425	CMakeFiles/yolov5.dir/jni_interface.cpp.o	1723a2e428e44e83
-185	2096	625158425	CMakeFiles/yolov5.dir/YoloV5.cpp.o	3809f8e4c096c6ad
-2096	3813	625158427	D:/project/Android_NCNN_yolov4-tiny-master/app/build/intermediates/cmake/debug/obj/arm64-v8a/libyolov5.so	9099960b05d4c8bf
